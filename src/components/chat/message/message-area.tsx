@@ -5,13 +5,13 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
-import { ShimmeringText } from "@/components/animate-ui/text/shimmering";
 import { useChatStore } from "@/lib/store/useChatStore";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
 import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
 import MessageBubble from "./message-bubble";
 import { LoaderPinwheel } from "lucide-react";
+import { Shimmer } from "@/components/ai-elements/shimmer";
 
 export type ChatMessageType = UIMessage<unknown, UIDataTypes, UITools>;
 
@@ -45,8 +45,11 @@ function MessageAreaComponent({ messages }: MessageAreaProps) {
               animate={{ opacity: 1, scaleX: 1, }}
               transition={{ duration: 0.5 }}
               className="mx-auto w-full origin-left max-w-[95vw] flex items-center  gap-1 lg:max-w-[55vw] py-3 pb-7 px-7"
-            ><LoaderPinwheel className="size-6 animate-spin"/>
-              <ShimmeringText className="text-foreground" text="Thinking..." />
+            >
+              <LoaderPinwheel className="size-6 animate-spin"/>
+            <Shimmer className="text-lg">
+              
+              Thinking...</Shimmer>
             </motion.div>
           )}
         </AnimatePresence>
