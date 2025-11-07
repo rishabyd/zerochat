@@ -8,8 +8,8 @@ import {
 import { z } from "zod";
 
 export const HIGH_CHAT_MODELS: Record<number, string> = {
-  "1": "google/gemini-2.5-flash-lite",
-  "2": "openai/gpt-4o-mini",
+  "1": "xai/grok-4-fast-non-reasoning",
+  "2": "xai/grok-4-fast-reasoning",
   "3": "openai/gpt-4o-mini",
   "4": "zai/glm-4.6",
   "5": "openai/o4-mini",

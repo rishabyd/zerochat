@@ -14,9 +14,10 @@ import {
   streamText,
 } from "ai";
 import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
-import { webSearch } from "@/lib/ai-gateway/web-search-tool";
-
-// Helper function to create assistant message structure for database storage
+import { webSearch } from "@/lib/tools/web-search-tool";
+import { pricingCalc } from "@/lib/tools/pricing-calculator";
+import { apiDebugger } from "@/lib/tools/api-testing";
+import { urlCrawler } from "@/lib/tools/live-crawler";
 const createAssistantMessage = (
   content: string,
 ): UIMessage<unknown, UIDataTypes, UITools> => ({
@@ -255,9 +256,11 @@ export async function POST(req: Request) {
           model,
           tools: {
             webSearch,
+            pricingCalc,
+            apiDebugger,
+            urlCrawler,
           },
-          temperature: 0,
-          stopWhen: [stepCountIs(2)],
+          stopWhen: [stepCountIs(10)],
           toolChoice: "auto",
           messages: convertToModelMessages(messagesForAI),
           experimental_transform: smoothStream({

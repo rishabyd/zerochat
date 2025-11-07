@@ -13,7 +13,15 @@ import {
 import { useChatStore } from "@/lib/store/useChatStore";
 import { isToolUIPart } from "@/lib/utils/is-tool-part";
 import type { ToolUIPart, UIDataTypes, UIMessage, UITools } from "ai";
-import { Brain, Globe, LoaderPinwheel, Wrench } from "lucide-react";
+import {
+  ArrowBigUp,
+  Banknote,
+  Brain,
+  Globe,
+  LoaderPinwheel,
+  TextSelect,
+  Wrench,
+} from "lucide-react";
 import { useMemo } from "react";
 import MessageBubble from "./message-bubble";
 import { Shimmer } from "@/components/ai-elements/shimmer";
@@ -140,12 +148,42 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
 
   const getIndicator = () => {
     if (type === "tool") {
-      const isSearch =
-        label?.toLowerCase().includes("search") ||
+      const isWebSearch =
+        label?.toLowerCase().includes("websearch") ||
         label?.toLowerCase().includes("web");
+
+      const isPricingSearch = label?.toLowerCase().includes("pricingcalc");
+      const isLiveUrlCrawling = label?.toLowerCase().includes("urlcrawler");
+      const isapiDebugger = label?.toLowerCase().includes("apidebugger");
+
+      if (isWebSearch) {
+        return {
+          text: "Searching the web...",
+          Icon: Globe,
+        };
+      }
+      if (isapiDebugger) {
+        return {
+          text: "Hitting API's...",
+          Icon: ArrowBigUp,
+        };
+      }
+      if (isLiveUrlCrawling) {
+        return {
+          text: "Live crawling url...",
+          Icon: TextSelect,
+        };
+      }
+      if (isPricingSearch) {
+        return {
+          text: "Fetching latest pricing...",
+          Icon: Banknote,
+        };
+      }
+
       return {
-        text: isSearch ? "Searching the web..." : `Using ${label}...`,
-        Icon: isSearch ? Globe : Wrench,
+        text: `Using ${label}...`,
+        Icon: Wrench,
       };
     }
     if (type === "reasoning")

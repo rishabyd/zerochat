@@ -7,7 +7,7 @@ export const exa = new Exa(process.env.EXA_API_KEY);
 
 export const webSearch = tool({
   description:
-    "Search the web for current information and get a direct, grounded answer.",
+    "Search the web for current information, news, and public content. Use for general questions, current events, and up-to-date information only.",
   inputSchema: z.object({
     query: z.string().min(1).max(200).describe("The web search query"),
   }),
