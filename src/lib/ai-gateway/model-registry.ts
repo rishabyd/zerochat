@@ -6,6 +6,7 @@ import {
   UITools,
 } from "ai";
 import { z } from "zod";
+import { getGatewayConfig } from "./provider-options";
 
 export const HIGH_CHAT_MODELS: Record<number, string> = {
   "1": "xai/grok-4-fast-non-reasoning",
@@ -15,8 +16,8 @@ export const HIGH_CHAT_MODELS: Record<number, string> = {
   "5": "openai/o4-mini",
   "6": "anthropic/claude-haiku-4.5",
   "7": "anthropic/claude-haiku-4.5",
-  "8": "openai/gpt-5-codex",
-  "9": "anthropic/claude-sonnet-4.5",
+  "8": "moonshotai/kimi-k2-thinking-turbo",
+  "9": "moonshotai/kimi-k2-thinking-turbo",
   "10": "anthropic/claude-sonnet-4.5",
 };
 
@@ -52,11 +53,15 @@ export async function GetBestModel(
   currentMessages: UIMessage<unknown, UIDataTypes, UITools>[],
 ) {
   try {
+    const model = "meta/llama-3.1-8b";
     const { object } = await generateObject({
       system,
-      model: `google/gemini-2.0-flash-lite`,
+      model,
       maxOutputTokens: 10,
       temperature: 0,
+      providerOptions: {
+        gateway: getGatewayConfig(model),
+      },
       messages: convertToModelMessages(currentMessages),
       schema: z.object({
         complexity: z.number().int().min(1).max(10),

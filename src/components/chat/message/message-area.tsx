@@ -5,11 +5,6 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
-import {
-  Reasoning,
-  ReasoningContent,
-  ReasoningTrigger,
-} from "@/components/ai-elements/reasoning";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { isToolUIPart } from "@/lib/utils/is-tool-part";
 import type { ToolUIPart, UIDataTypes, UIMessage, UITools } from "ai";
@@ -17,12 +12,13 @@ import {
   ArrowBigUp,
   Banknote,
   Brain,
+  ChevronDown,
   Globe,
   LoaderPinwheel,
   TextSelect,
   Wrench,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import MessageBubble from "./message-bubble";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Message, MessageContent } from "@/components/ai-elements/message";
@@ -55,19 +51,16 @@ const isReasoningPart = (part: MessagePart): part is ReasoningPart => {
 };
 
 const isActiveReasoning = (part: ReasoningPart): boolean => {
-  // Check the state property first
   if (part.state) {
     return REASONING_ACTIVE_STATES.some((state) =>
       part.state!.toLowerCase().includes(state),
     );
   }
-  // Check reasoning.state as fallback
   if (part.reasoning?.state) {
     return REASONING_ACTIVE_STATES.some((state) =>
       part.reasoning!.state!.toLowerCase().includes(state),
     );
   }
-  // If no state, check if there's text content - if yes, it's likely complete
   return !part.text || part.text.trim().length === 0;
 };
 
@@ -111,25 +104,99 @@ const extractTextFromPart = (part: MessagePart): string | null => {
   return null;
 };
 
-const getIndicatorState = (messages: ChatMessageType[]) => {
+type StatusIndicatorState = {
+  type: "reasoning" | "tool" | "thinking";
+  Icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  metadata?: string;
+  streamingContent?: string;
+  completedReasoningBlocks?: string[]; // All completed reasoning chunks
+};
+
+const getIndicatorState = (
+  messages: ChatMessageType[],
+): StatusIndicatorState => {
   const lastMsg = messages[messages.length - 1];
   if (!lastMsg || lastMsg.role !== "assistant") {
-    return { type: "thinking", label: null };
+    return {
+      type: "thinking",
+      Icon: LoaderPinwheel,
+      label: "Thinking...",
+    };
   }
+
+  const completedReasoningBlocks: string[] = [];
+  let activeReasoningContent: string | undefined;
 
   for (const part of lastMsg.parts ?? []) {
     if (isToolUIPart(part) && TOOL_ACTIVE_STATES.includes(part.state)) {
       const toolName = part.type.startsWith("tool-")
         ? part.type.slice(5)
         : "tool";
-      return { type: "tool", label: toolName };
+
+      const isWebSearch =
+        toolName.toLowerCase().includes("websearch") ||
+        toolName.toLowerCase().includes("web");
+
+      const isPricingSearch = toolName.toLowerCase().includes("pricingcalc");
+      const isLiveUrlCrawling = toolName.toLowerCase().includes("urlcrawler");
+      const isApiDebugger = toolName.toLowerCase().includes("apidebugger");
+
+      let Icon = Wrench;
+      let label = `Using ${toolName}...`;
+
+      if (isWebSearch) {
+        Icon = Globe;
+        label = "Searching the web...";
+      } else if (isApiDebugger) {
+        Icon = ArrowBigUp;
+        label = "Hitting API's...";
+      } else if (isLiveUrlCrawling) {
+        Icon = TextSelect;
+        label = "Live crawling url...";
+      } else if (isPricingSearch) {
+        Icon = Banknote;
+        label = "Fetching latest pricing...";
+      }
+
+      return {
+        type: "tool",
+        Icon,
+        label,
+        metadata: toolName,
+      };
     }
-    if (isReasoningPart(part) && isActiveReasoning(part)) {
-      return { type: "reasoning", label: null };
+
+    // Collect all reasoning blocks (active + completed)
+    if (isReasoningPart(part)) {
+      const reasoningText = extractTextFromPart(part);
+      if (reasoningText && reasoningText.trim().length > 0) {
+        if (isActiveReasoning(part)) {
+          activeReasoningContent = reasoningText;
+        } else {
+          completedReasoningBlocks.push(reasoningText);
+        }
+      }
     }
   }
 
-  return { type: "thinking", label: null };
+  // If there's active reasoning, show it
+  if (activeReasoningContent !== undefined) {
+    return {
+      type: "reasoning",
+      Icon: Brain,
+      label: "Reasoning...",
+      streamingContent: activeReasoningContent,
+      completedReasoningBlocks,
+    };
+  }
+
+  return {
+    type: "thinking",
+    Icon: LoaderPinwheel,
+    label: "Thinking...",
+    completedReasoningBlocks,
+  };
 };
 
 interface MessageAreaProps {
@@ -139,59 +206,9 @@ interface MessageAreaProps {
 export default function MessageAreaComponent({ messages }: MessageAreaProps) {
   const thinking = useChatStore((s) => s.thinking);
   const error = useChatStore((s) => s.error);
-  const stopResponse = useChatStore((s) => s.stopResponse);
+  const [reasoningExpanded, setReasoningExpanded] = useState(false);
 
-  const { type, label } = useMemo(
-    () => getIndicatorState(messages),
-    [messages],
-  );
-
-  const getIndicator = () => {
-    if (type === "tool") {
-      const isWebSearch =
-        label?.toLowerCase().includes("websearch") ||
-        label?.toLowerCase().includes("web");
-
-      const isPricingSearch = label?.toLowerCase().includes("pricingcalc");
-      const isLiveUrlCrawling = label?.toLowerCase().includes("urlcrawler");
-      const isapiDebugger = label?.toLowerCase().includes("apidebugger");
-
-      if (isWebSearch) {
-        return {
-          text: "Searching the web...",
-          Icon: Globe,
-        };
-      }
-      if (isapiDebugger) {
-        return {
-          text: "Hitting API's...",
-          Icon: ArrowBigUp,
-        };
-      }
-      if (isLiveUrlCrawling) {
-        return {
-          text: "Live crawling url...",
-          Icon: TextSelect,
-        };
-      }
-      if (isPricingSearch) {
-        return {
-          text: "Fetching latest pricing...",
-          Icon: Banknote,
-        };
-      }
-
-      return {
-        text: `Using ${label}...`,
-        Icon: Wrench,
-      };
-    }
-    if (type === "reasoning")
-      return { text: "Reasoning deeply...", Icon: Brain };
-    return { text: "Thinking...", Icon: LoaderPinwheel };
-  };
-
-  const { text: indicatorText, Icon: IndicatorIcon } = getIndicator();
+  const indicatorState = useMemo(() => getIndicatorState(messages), [messages]);
 
   const hasStreamingText = useMemo(() => {
     const lastMsg = messages[messages.length - 1];
@@ -234,12 +251,10 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
               {msg.role === "user" ? (
                 <MessageBubble msg={msg} />
               ) : (
-                <div className="w-full max-w-[95vw] lg:max-w-[55vw] box-border mx-auto ">
+                <div className="w-full max-w-[95vw] lg:max-w-[55vw] box-border mx-auto">
                   <Message from={msg.role}>
                     <MessageContent>
                       {msg.parts.map((part, partIndex) => {
-                        const isLastPart = partIndex === msg.parts.length - 1;
-
                         if (part.type === "text") {
                           const textContent = extractTextFromPart(part);
                           return (
@@ -251,36 +266,9 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
                           );
                         }
 
+                        // Skip ALL reasoning rendering in message flow - goes to indicator only
                         if (part.type === "reasoning") {
-                          // Use extractTextFromPart for consistent content extraction
-                          const reasoningContent = extractTextFromPart(part);
-
-                          // Skip rendering if no content yet
-                          if (
-                            !reasoningContent ||
-                            reasoningContent.trim().length === 0
-                          ) {
-                            return null;
-                          }
-
-                          // Determine if reasoning is actively streaming
-                          const isStreamingReasoning =
-                            isLastMessage &&
-                            isLastPart &&
-                            isActiveReasoning(part as ReasoningPart);
-
-                          return (
-                            <Reasoning
-                              key={`reasoning-${partIndex}`}
-                              className="w-fit p-3   bg-black/35 mb-4 "
-                              isStreaming={isStreamingReasoning}
-                            >
-                              <ReasoningTrigger className="cursor-pointer" />
-                              <ReasoningContent className="">
-                                {reasoningContent}
-                              </ReasoningContent>
-                            </Reasoning>
-                          );
+                          return null;
                         }
 
                         return null;
@@ -290,17 +278,63 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
                 </div>
               )}
 
+              {/* UNIFIED STATUS INDICATOR - handles everything */}
               {shouldShowIndicator && index === lastUserMessageIndex && (
-                <div className="mx-auto  max-w-[95vw] lg:max-w-[55vw] px-7 ">
-                  <div
-                    className={`flex items-center bg-background/25 w-fit gap-2 p-3 px-3.5 rounded-full text-sm  transition-opacity duration-100 ${
-                      shouldShowIndicator ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
+                <div className="mx-auto max-w-[95vw] lg:max-w-[55vw] px-7">
+                  <div className="bg-background/25 gap-3 p-3 px-4 rounded-lg text-sm transition-opacity duration-100 w-fit max-w-lg">
+                    {/* Header */}
                     <div className="flex items-center gap-2">
-                      <IndicatorIcon className="size-6 animate-pulse flex-shrink-0" />
-                      <Shimmer className="">{indicatorText}</Shimmer>
+                      <indicatorState.Icon className="size-5 animate-pulse flex-shrink-0" />
+                      <Shimmer>{indicatorState.label}</Shimmer>
                     </div>
+
+                    {/* Active streaming reasoning - FULL TEXT, NO CLAMP */}
+                    {indicatorState.streamingContent && (
+                      <div className="text-xs text-muted-foreground mt-2 pl-7 border-l border-muted-foreground/30 italic max-h-40 overflow-y-auto whitespace-pre-wrap break-words">
+                        {indicatorState.streamingContent}
+                      </div>
+                    )}
+
+                    {/* Completed reasoning toggle */}
+                    {indicatorState.completedReasoningBlocks &&
+                      indicatorState.completedReasoningBlocks.length > 0 && (
+                        <button
+                          onClick={() =>
+                            setReasoningExpanded(!reasoningExpanded)
+                          }
+                          className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pl-7"
+                        >
+                          <ChevronDown
+                            className={`size-4 transition-transform ${
+                              reasoningExpanded ? "rotate-180" : ""
+                            }`}
+                          />
+                          <span>
+                            {indicatorState.completedReasoningBlocks.length}{" "}
+                            reasoning block
+                            {indicatorState.completedReasoningBlocks.length > 1
+                              ? "s"
+                              : ""}
+                          </span>
+                        </button>
+                      )}
+
+                    {/* Expanded completed reasoning - FULL TEXT, NO CLAMP */}
+                    {reasoningExpanded &&
+                      indicatorState.completedReasoningBlocks && (
+                        <div className="mt-2 space-y-3 pl-7 border-l border-muted-foreground/30">
+                          {indicatorState.completedReasoningBlocks.map(
+                            (block, idx) => (
+                              <div
+                                key={idx}
+                                className="text-xs text-muted-foreground max-h-60 overflow-y-auto whitespace-pre-wrap break-words"
+                              >
+                                {block}
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
                   </div>
                 </div>
               )}
