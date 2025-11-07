@@ -24,7 +24,7 @@ function MainInputBox({
 }: {
   sendMessage?: (
     message: { text: string },
-    options?: { body?: Record<string, unknown> }
+    options?: { body?: Record<string, unknown> },
   ) => void;
   status?: string;
   stopResponse?: () => void;
@@ -101,7 +101,7 @@ function MainInputBox({
       setCurrentSessionId,
       router,
       sendMessage,
-    ]
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -111,7 +111,7 @@ function MainInputBox({
         if (!disabled) handleSubmit(e);
       }
     },
-    [disabled, handleSubmit]
+    [disabled, handleSubmit],
   );
 
   const handleStop = useCallback(() => {
@@ -132,7 +132,7 @@ function MainInputBox({
       transition={{ duration: 0.2 }}
       layout
       onSubmit={handleSubmit}
-      className={`w-[96vw] origin-center lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
+      className={`w-[96vw] origin-center rounded-3xl lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
                  h-fit flex p-2 gap-2 border-2  bg-sidebar ${
                    disabled ? "cursor-not-allowed" : ""
                  }`}
@@ -141,8 +141,8 @@ function MainInputBox({
         placeholder={placeholderText}
         autoFocus={!disabled}
         onKeyDown={handleKeyDown}
-        className="w-full h-full scrollbar-thumb-accent scrollbar-thin border-0 resize-none max-h-40 
-                   placeholder:opacity-70 placeholder:text-primary bg-transparent min-h-11 px-2 pl-3 
+        className="w-full h-full scrollbar-thumb-accent scrollbar-thin border-0 resize-none max-h-40
+                   placeholder:opacity-70 placeholder:text-primary bg-transparent min-h-11 px-2 pl-3
                    place-content-center leading-tight focus:outline-none focus-visible:ring-0"
         value={prompt}
         onChange={(e) => !disabled && setPrompt(e.target.value)}
@@ -160,7 +160,7 @@ function MainInputBox({
       >
         {isReady ? (
           <SendButton
-            className="rounded-none hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-full cursor-pointer !border-2"
+            className="rounded-2xl hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-full cursor-pointer !border-2"
             props={{
               type: "submit",
               disabled:
@@ -172,7 +172,7 @@ function MainInputBox({
         ) : (
           <Button
             variant="outline"
-            className="hover:text-red-600 bg-accent border-2 h-full text-white 
+            className="hover:text-red-600 bg-accent border-2 h-full text-white
                        hover:bg-red-500 rounded-none cursor-pointer hover:scale-105 duration-300"
             onClick={handleStop}
             disabled={disabled}
