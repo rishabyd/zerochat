@@ -53,7 +53,7 @@ export async function GetBestModel(
   currentMessages: UIMessage<unknown, UIDataTypes, UITools>[],
 ) {
   try {
-    const model = "meta/llama-3.1-8b";
+    const model = "google/gemini-2.0-flash-lite";
     const { object } = await generateObject({
       system,
       model,
