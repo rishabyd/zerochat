@@ -6,7 +6,7 @@ export function InputBoxSkeleton() {
     <motion.div
       transition={{ duration: 0.2 }}
       layout
-      className="w-[96vw] origin-center lg:max-w-[50vw] mx-auto shadow-md shadow-background/50 h-fit flex p-2 gap-2 border-2 rounded-3xl bg-sidebar"
+      className="w-[96vw] origin-center lg:max-w-[50vw] mx-auto shadow-md shadow-background/50 h-fit flex p-2 gap-2 border-2  bg-sidebar"
     >
       {/* Textarea skeleton */}
       <div className="w-full h-full min-h-11 px-2 pl-3 flex items-center">

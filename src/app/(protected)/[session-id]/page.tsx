@@ -1,6 +1,6 @@
 import SessionWrapper from "@/components/chat/session-wrapper";
 import { getSession } from "@/lib/services/user-sessions";
-import { auth } from "@clerk/nextjs/server";
+import { getServerUserId } from "@/lib/auth";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
 
 export default async function ChatSessionPage({
@@ -11,8 +11,7 @@ export default async function ChatSessionPage({
   const { "session-id": sessionId } = await params;
 
   try {
-    const { userId } = await auth();
-
+    const userId = await getServerUserId();
     const session = await getSession(userId!, sessionId);
 
     // Convert database messages to UI message format for initial render

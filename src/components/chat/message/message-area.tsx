@@ -11,6 +11,7 @@ import type { UIDataTypes, UIMessage, UITools } from "ai";
 import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
 import MessageBubble from "./message-bubble";
+import { LoaderPinwheel } from "lucide-react";
 
 export type ChatMessageType = UIMessage<unknown, UIDataTypes, UITools>;
 
@@ -40,12 +41,12 @@ function MessageAreaComponent({ messages }: MessageAreaProps) {
         <AnimatePresence>
           {thinking && (
             <motion.div
-              initial={{ opacity: 0, scaleX: 0, x: -50 }}
-              animate={{ opacity: 1, scaleX: 1, x: 0 }}
+              initial={{ opacity: 0, scaleX: 0,  }}
+              animate={{ opacity: 1, scaleX: 1, }}
               transition={{ duration: 0.5 }}
-              className="mx-auto w-full origin-left max-w-[95vw] lg:max-w-[55vw] py-3 pb-7 px-7"
-            >
-              <ShimmeringText text="Thinking..." />
+              className="mx-auto w-full origin-left max-w-[95vw] flex items-center  gap-1 lg:max-w-[55vw] py-3 pb-7 px-7"
+            ><LoaderPinwheel className="size-6 animate-spin"/>
+              <ShimmeringText className="text-foreground" text="Thinking..." />
             </motion.div>
           )}
         </AnimatePresence>

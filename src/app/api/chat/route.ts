@@ -1,15 +1,13 @@
 import { saveMessage } from "@/lib/actions/chat-actions";
 import {
-  GetBestModel,
-  getGatewayConfig,
+  GetBestModel
 } from "@/lib/ai-gateway/model-registry";
-import { runWithTools } from "@/lib/ai-gateway/run-with-tools";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getCurrentUserProfile } from "@/lib/services/user-profile";
 import { getSession } from "@/lib/services/user-sessions";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
 import {
   convertToModelMessages,
@@ -17,6 +15,8 @@ import {
   stepCountIs,
   streamText,
 } from "ai";
+import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
+import { webSearch } from "@/lib/ai-gateway/web-search-tool";
 
 // Helper function to create assistant message structure for database storage
 const createAssistantMessage = (
@@ -136,7 +136,8 @@ export async function POST(req: Request) {
   console.log(`🚀 Chat POST request started at ${new Date().toISOString()}`);
 
   try {
-    const { userId } = await auth();
+    const session = await auth.api.getSession({ headers: req.headers });
+    const userId = session?.user.id;
     if (!userId)
       return Response.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -256,7 +257,7 @@ export async function POST(req: Request) {
       );
       try {
         const messagesForRouter = messagesForAI.slice(-6);
-        const { model, complexity, needsWeb, searchQuery } = await GetBestModel(
+        const { model, complexity } = await GetBestModel(
           messagesForRouter
         );
 
@@ -282,63 +283,23 @@ Ensure proper spacing between lines for readability, especially for short respon
 
 When replying with "yes" or "no," bold them and place each on a separate line for emphasis.
 
-IMPORTANT: When you use the webSearch tool, you will receive search results. You MUST use those results to provide a comprehensive answer to the user's question. Do not just mention that you searched - actually incorporate the information from the search results into your response. If the search results contain relevant information, use it to answer the question directly.
-
-
 `;
 
-        // Check if web search is needed and use multi-step approach
-        if (needsWeb) {
-          console.log("🔍 Starting web search flow");
-
-          // Use the run-with-tools utility for proper multi-step approach
-          const response = await runWithTools({
-            userId,
-            baseMessages: convertToModelMessages(messagesForAI),
-            model,
-            systemPrompt,
-            needsWeb,
-            abortSignal: combinedSignal.signal,
-            maxOutputTokens: 8000,
-            sessionId,
-            complexity,
-            searchQuery,
-            userMessage: currentMessage,
-          });
-
-          // Handle partial response logging in the background
-          requestSignal?.addEventListener(
-            "abort",
-            () => {
-              if (partialResponse.trim()) {
-                void logPartialResponse(
-                  sessionId,
-                  currentMessage,
-                  partialResponse
-                );
-              }
-            },
-            { once: true }
-          );
-
-          return response;
-        }
-
-        // Regular response without web search
         const result = streamText({
-          system: systemPrompt,
           providerOptions: {
             gateway: getGatewayConfig(model),
           },
           model,
-          toolChoice: "none",
-          stopWhen: stepCountIs(1),
+          tools: {
+            webSearch,
+          },
+          stopWhen: [stepCountIs(2)],
+          toolChoice: "auto",
           messages: convertToModelMessages(messagesForAI),
           experimental_transform: smoothStream({
             delayInMs: 20,
             chunking: "word",
           }),
-          maxOutputTokens: 8000,
           abortSignal: combinedSignal.signal,
 
           onFinish: async (e) => {

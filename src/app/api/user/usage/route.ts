@@ -1,9 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const session = await auth.api.getSession({ headers: req.headers });
+    if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 

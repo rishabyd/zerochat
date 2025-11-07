@@ -18,7 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { UnifiedProfile } from "@/lib/types";
-import { useClerk } from "@clerk/nextjs";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { NavUserSkeleton } from "./nav-user-skeleton";
 
@@ -37,7 +37,7 @@ export function NavUser({
   isLoading?: boolean;
 }) {
   const { isMobile } = useSidebar();
-  const { signOut } = useClerk();
+  const { signOut } = authClient;
   const router = useRouter();
   if (isLoading) {
     return <NavUserSkeleton />;
@@ -86,7 +86,12 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem
+              onClick={async () => {
+                await signOut();
+                router.refresh();
+              }}
+            >
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

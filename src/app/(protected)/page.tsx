@@ -1,9 +1,9 @@
 import ChatPageHeader from "@/components/chat/chat-page-header";
 import MainInputBox from "@/components/chat/InputBox/input-box";
-import { auth } from "@clerk/nextjs/server";
+import { getServerUserId } from "@/lib/auth";
 
 export default async function ChatHomePage() {
-  const { userId } = await auth();
+  const userId = await getServerUserId();
   if (!userId) {
     return null;
   }

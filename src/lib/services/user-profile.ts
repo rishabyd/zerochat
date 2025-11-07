@@ -13,14 +13,13 @@ export async function getCurrentUserProfile(
     return cachedProfile;
   }
 
-  const db = await prisma.profile.findUnique({
+  const db = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
       email: true,
-      firstName: true,
-      lastName: true,
-      imageUrl: true,
+      name: true,
+      image: true,
     },
   });
   if (!db) {
@@ -31,9 +30,9 @@ export async function getCurrentUserProfile(
   const unified: UnifiedProfile = {
     id: db.id,
     email: db.email ?? undefined,
-    firstName: db.firstName ?? undefined,
-    lastName: db.lastName ?? undefined,
-    imageUrl: db.imageUrl ?? undefined,
+    firstName: db.name?.split(" ")[0] ?? undefined,
+    lastName: db.name?.split(" ").slice(1).join(" ") || undefined,
+    imageUrl: db.image ?? undefined,
   };
   await setUserCache(userId, unified);
   console.log(`data query for userprofile`);

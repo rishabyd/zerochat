@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,21 +8,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Profile {
-  id           String        @id
-  email        String        @unique
-  firstName    String?
-  lastName     String?
-  imageUrl     String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  chatSessions ChatSession[]
-  settings     UserSettings?
-  ChatMessage  ChatMessage[]
 
-  @@index([email])
-  @@map("profiles")
-}
 
 model UserSettings {
   id                String   @id @default(uuid())
@@ -33,7 +20,7 @@ model UserSettings {
   calendarConnected Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  user              Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
 }
@@ -45,7 +32,7 @@ model ChatSession {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   messages  ChatMessage[]
-  user      Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   summary   String?
 
   @@unique([id, userId])
@@ -63,7 +50,7 @@ model ChatMessage {
   session    ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   modelUsed  String?
   userId     String
-  user       Profile     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
   webUsed    Boolean     @default(false)
   creditUsed Int?
 
@@ -78,4 +65,68 @@ enum MessageRole {
   USER
   AI
   SYSTEM
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+chatSessions ChatSession[]
+  settings     UserSettings?
+  ChatMessage  ChatMessage[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
 }

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "@/lib/auth-client";
 import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -20,15 +20,15 @@ import { NavSessions } from "./nav-sessions";
 import { NavUser } from "./nav-user";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, isLoaded } = useUser();
+  const { data, isPending } = useSession();
   const isMobile = useIsMobile();
 
   const fetchProfile = useUserProfileStore((e) => e.fetchProfile);
   const profile = useUserProfileStore((e) => e.profile);
   const userData = {
-    name: user?.fullName || user?.firstName || "User",
-    email: user?.primaryEmailAddress?.emailAddress || "",
-    avatar: user?.imageUrl || "/avatars/default.jpg",
+    name: data?.user?.name || data?.user?.email || "User",
+    email: data?.user?.email || "",
+    avatar: data?.user?.image || "/avatars/default.jpg",
   };
   useEffect(() => {
     if (!profile) {
@@ -68,7 +68,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser profile={profile} user={userData} isLoading={!isLoaded} />
+        <NavUser profile={profile} user={userData} isLoading={isPending} />
       </SidebarFooter>
     </Sidebar>
   );

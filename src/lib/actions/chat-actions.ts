@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getServerUserId } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "../services/user-chat";
 
 export async function saveMessage({
@@ -32,7 +32,7 @@ export async function saveMessage({
     throw new Error("fields missing ");
   }
 
-  const { userId } = await auth();
+  const userId = await getServerUserId();
 
   if (!userId) {
     throw new Error("Unauthorized");

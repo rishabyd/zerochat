@@ -1,13 +1,15 @@
 import { getSession } from "@/lib/services/user-sessions";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import { UIDataTypes, UIMessage, UITools } from "ai";
+import { headers } from "next/headers";
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const authSession = await auth.api.getSession({ headers: await headers() });
+    const userId = authSession?.user.id;
     if (!userId)
       return Response.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -19,16 +21,16 @@ export async function GET(
       );
     }
 
-    const session = await getSession(userId, sessionId);
+    const chatSession = await getSession(userId, sessionId);
 
     const sessionMetadata = {
-      id: session?.id,
-      createdAt: session?.createdAt,
-      title: session?.title,
+      id: chatSession?.id,
+      createdAt: chatSession?.createdAt,
+      title: chatSession?.title,
     };
     // Convert database messages to UIMessage format
     const messages: UIMessage<unknown, UIDataTypes, UITools>[] =
-      session?.messages.map((msg) => ({
+      chatSession?.messages.map((msg) => ({
         id: msg.id,
         role: msg.role === "USER" ? "user" : "assistant",
         parts: [{ type: "text", text: msg.content }],

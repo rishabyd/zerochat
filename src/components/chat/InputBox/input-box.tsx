@@ -133,7 +133,7 @@ function MainInputBox({
       layout
       onSubmit={handleSubmit}
       className={`w-[96vw] origin-center lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
-                 h-fit flex p-2 gap-2 border-2 rounded-3xl bg-sidebar ${
+                 h-fit flex p-2 gap-2 border-2  bg-sidebar ${
                    disabled ? "cursor-not-allowed" : ""
                  }`}
     >
@@ -160,7 +160,7 @@ function MainInputBox({
       >
         {isReady ? (
           <SendButton
-            className="rounded-2xl hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-full cursor-pointer !border-2"
+            className="rounded-none hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-full cursor-pointer !border-2"
             props={{
               type: "submit",
               disabled:
@@ -173,7 +173,7 @@ function MainInputBox({
           <Button
             variant="outline"
             className="hover:text-red-600 bg-accent border-2 h-full text-white 
-                       hover:bg-red-500 rounded-2xl cursor-pointer hover:scale-105 duration-300"
+                       hover:bg-red-500 rounded-none cursor-pointer hover:scale-105 duration-300"
             onClick={handleStop}
             disabled={disabled}
           >

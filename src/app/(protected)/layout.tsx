@@ -1,14 +1,14 @@
 import { AppSidebar } from "@/components/sidebar/chat-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { getServerUserId } from "@/lib/auth";
 import { getCurrentUserProfile } from "@/lib/services/user-profile";
-import { auth } from "@clerk/nextjs/server";
 
 export default async function ChatLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
+  const userId = await getServerUserId();
   if (!userId) {
     return null;
   }

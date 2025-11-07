@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { getServerUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { sanitizeSessionTitle, validateSessionId } from "../utils/sanitize";
 
@@ -19,8 +19,8 @@ export async function SyncClientSession({
   title: string;
 }): Promise<SyncResult> {
   try {
-    const user = await auth();
-    if (!user.userId) {
+    const userId = await getServerUserId();
+    if (!userId) {
       return { success: false, error: "User not authenticated" };
     }
 
@@ -41,7 +41,7 @@ export async function SyncClientSession({
       },
       create: {
         id: validatedSessionId,
-        userId: user.userId,
+        userId: userId,
         title: sanitizedTitle,
       },
       select: {
@@ -52,7 +52,7 @@ export async function SyncClientSession({
       },
     });
 
-    if (session.userId !== user.userId) {
+    if (session.userId !== userId) {
       return { success: false, error: "Session access denied" };
     }
 
@@ -81,8 +81,8 @@ export async function UpdateSession({
   sessionId: string;
   title: string;
 }) {
-  const user = await auth();
-  if (!user.userId) throw new Error("User not authenticated");
+  const userId = await getServerUserId();
+  if (!userId) throw new Error("User not authenticated");
 
   try {
     // Validate and sanitize inputs
@@ -90,7 +90,7 @@ export async function UpdateSession({
     const sanitizedTitle = sanitizeSessionTitle(title);
 
     const updatedSession = await prisma.chatSession.update({
-      where: { id_userId: { id: validatedSessionId, userId: user.userId } },
+      where: { id_userId: { id: validatedSessionId, userId } },
       data: { title: sanitizedTitle },
     });
 
@@ -107,15 +107,15 @@ export async function UpdateSession({
 }
 
 export async function DeleteSession({ sessionId }: { sessionId: string }) {
-  const user = await auth();
-  if (!user.userId) throw new Error("User not authenticated");
+  const userId = await getServerUserId();
+  if (!userId) throw new Error("User not authenticated");
 
   try {
     // Validate session ID
     const validatedSessionId = validateSessionId(sessionId);
 
     const deletedSession = await prisma.chatSession.delete({
-      where: { id_userId: { id: validatedSessionId, userId: user.userId } },
+      where: { id_userId: { id: validatedSessionId, userId } },
     });
 
     // Invalidate user sessions cache since session was deleted
