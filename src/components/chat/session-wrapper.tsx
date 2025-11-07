@@ -24,7 +24,7 @@ export default function SessionWrapper({
   const { data, error, mutate } = useSWRImmutable(
     isValidSessionId(sessionId) ? `/api/sessions/${sessionId}` : null,
     fetcher,
-    { fallbackData: { messages: initialMessages } }
+    { fallbackData: { messages: initialMessages } },
   );
 
   useEffect(() => {

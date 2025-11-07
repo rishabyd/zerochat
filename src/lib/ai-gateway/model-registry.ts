@@ -7,20 +7,18 @@ import {
 } from "ai";
 import { z } from "zod";
 
-
 export const HIGH_CHAT_MODELS: Record<number, string> = {
   "1": "google/gemini-2.5-flash-lite",
   "2": "openai/gpt-4o-mini",
   "3": "openai/gpt-4o-mini",
   "4": "zai/glm-4.6",
-  "5": "openai/o3-mini",
+  "5": "openai/o4-mini",
   "6": "anthropic/claude-haiku-4.5",
   "7": "anthropic/claude-haiku-4.5",
   "8": "openai/gpt-5-codex",
   "9": "anthropic/claude-sonnet-4.5",
   "10": "xai/grok-4",
 };
-
 
 const system = `You are a cost-efficient query classification router with conversation awareness.
 
@@ -46,18 +44,16 @@ DECISION RULES:
 OUTPUT (JSON only, no other text):
 {
   "complexity": <1-10>,
-  
+
 }`;
 
-
 export async function GetBestModel(
-  currentMessages: UIMessage<unknown, UIDataTypes, UITools>[]
+  currentMessages: UIMessage<unknown, UIDataTypes, UITools>[],
 ) {
-
   try {
     const { object } = await generateObject({
       system,
-      model: `google/gemini-2.0-flash-lite`,
+      model: `meta/llama-3.1-8b`,
       maxOutputTokens: 10,
       temperature: 0,
       messages: convertToModelMessages(currentMessages),
@@ -71,7 +67,7 @@ export async function GetBestModel(
     let complexityNum = Number(object.complexity);
 
     // Validate complexity range
-    if (isNaN(complexityNum) || complexityNum < 1 || complexityNum > 5) {
+    if (isNaN(complexityNum) || complexityNum < 1 || complexityNum > 10) {
       console.warn(`Invalid complexity: ${complexityNum}, defaulting to 3`);
       complexityNum = 3;
     }

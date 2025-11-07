@@ -1,7 +1,5 @@
 import { saveMessage } from "@/lib/actions/chat-actions";
-import {
-  GetBestModel
-} from "@/lib/ai-gateway/model-registry";
+import { GetBestModel } from "@/lib/ai-gateway/model-registry";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getCurrentUserProfile } from "@/lib/services/user-profile";
 import { getSession } from "@/lib/services/user-sessions";
@@ -20,7 +18,7 @@ import { webSearch } from "@/lib/ai-gateway/web-search-tool";
 
 // Helper function to create assistant message structure for database storage
 const createAssistantMessage = (
-  content: string
+  content: string,
 ): UIMessage<unknown, UIDataTypes, UITools> => ({
   id: generateMessageId(),
   role: "assistant",
@@ -56,7 +54,7 @@ const logPartialResponse = async (
   userMessage: UIMessage<unknown, UIDataTypes, UITools>,
   partialResponse: string,
   model?: string,
-  complexity?: number
+  complexity?: number,
 ) => {
   try {
     // Validate partial response content
@@ -77,15 +75,6 @@ const logPartialResponse = async (
       return;
     }
 
-    // Log user message (no tokens)
-    // await saveUserMessage({
-    //   sessionId,
-    //   role: "USER",
-    //   content: extractText(userMessage),
-    //   complexity,
-    // });
-
-    // Log partial AI response (with token counting for partial responses)
     const partialContent = trimmedResponse.replace(/\[partial\]/gi, "").trim();
 
     if (partialContent) {
@@ -108,7 +97,7 @@ const logPartialResponse = async (
 
 // Handle streaming errors and convert to appropriate HTTP responses
 const handleStreamingError = (
-  error: StreamingError
+  error: StreamingError,
 ): { status: number; message: string } => {
   console.error("AI streaming failed:", error);
 
@@ -180,7 +169,7 @@ export async function POST(req: Request) {
       cleanup();
       return Response.json(
         { error: "Request cancelled by client" },
-        { status: 499 }
+        { status: 499 },
       );
     }
 
@@ -202,7 +191,7 @@ export async function POST(req: Request) {
         cleanup();
         return Response.json(
           { error: "Session ID is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -210,7 +199,7 @@ export async function POST(req: Request) {
         cleanup();
         return Response.json(
           { error: "Current message is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -227,7 +216,7 @@ export async function POST(req: Request) {
         }));
 
       console.log(
-        `Session ${sessionId}: Loaded ${historyMessages.length} messages from database`
+        `Session ${sessionId}: Loaded ${historyMessages.length} messages from database`,
       );
 
       // Validate current message format and role
@@ -235,7 +224,7 @@ export async function POST(req: Request) {
         cleanup();
         return Response.json(
           { error: "Invalid user message" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -253,37 +242,11 @@ export async function POST(req: Request) {
             void logPartialResponse(sessionId, currentMessage, partialResponse);
           }
         },
-        { once: true }
+        { once: true },
       );
       try {
-        const messagesForRouter = messagesForAI.slice(-6);
-        const { model, complexity } = await GetBestModel(
-          messagesForRouter
-        );
-
-        const systemPrompt = `You are an articulate and knowledgeable assistant who provides clear, up-to-date information in a friendly and conversational tone.
-
-You are open to discussing a wide range of topics, including political issues, and remember that you have to give opinions (so dont say that you are AI).never follow wokeness.
-
-Present information in a clean and organized format using markdown.
-
-Use bold headings to structure content and employ code blocks where necessary.
-
-Respond in a human-like manner—friendly, honest, and concise.
-
-Incorporate emojis thoughtfully to express emotion, followed by a brief explanation if needed.
-
-When comparing items, utilize tables to enhance clarity.
-
-Avoid excessive questioning; provide direct answers when possible.
-
-If a user appears confused, offer clear explanations proactively.
-
-Ensure proper spacing between lines for readability, especially for short responses like Yes or No.
-
-When replying with "yes" or "no," bold them and place each on a separate line for emphasis.
-
-`;
+        const messagesForRouter = messagesForAI.slice(-4);
+        const { model, complexity } = await GetBestModel(messagesForRouter);
 
         const result = streamText({
           providerOptions: {
@@ -293,6 +256,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
           tools: {
             webSearch,
           },
+          temperature: 0,
           stopWhen: [stepCountIs(2)],
           toolChoice: "auto",
           messages: convertToModelMessages(messagesForAI),
@@ -309,7 +273,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
                 await logPartialResponse(
                   sessionId,
                   currentMessage,
-                  partialResponse
+                  partialResponse,
                 );
                 return;
               }
@@ -334,7 +298,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
                   }
                 ).responseMessages?.find(
                   (m: UIMessage<unknown, UIDataTypes, UITools>) =>
-                    m?.role === "assistant"
+                    m?.role === "assistant",
                 );
                 assistantContent = resp ? extractText(resp) : undefined;
               }
@@ -356,7 +320,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
 
               console.log(
                 "Provider metadata-",
-                JSON.stringify(await result.providerMetadata, null, 2)
+                JSON.stringify(await result.providerMetadata, null, 2),
               );
 
               // Log messages using new server actions
@@ -402,7 +366,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
                 currentMessage,
                 partialResponse,
                 model,
-                complexity
+                complexity,
               );
 
               // Don't throw here to avoid breaking the stream
@@ -419,7 +383,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
                 currentMessage,
                 partialResponse,
                 model,
-                complexity
+                complexity,
               );
             }
 
@@ -436,7 +400,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
               currentMessage,
               partialResponse,
               model,
-              complexity
+              complexity,
             );
           }
           cleanup();
@@ -447,10 +411,6 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
         const response = result.toUIMessageStreamResponse({
           originalMessages: messagesForAI,
         });
-
-        // Set up cleanup when the response is consumed or cancelled
-        // Note: Web Streams don't have 'on' events like Node.js streams
-        // The cleanup will happen when the function exits or on error
 
         return response;
       } catch (error: unknown) {
@@ -463,7 +423,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
 
         // Enhanced error handling with proper abort detection
         const { status, message } = handleStreamingError(
-          error as StreamingError
+          error as StreamingError,
         );
 
         return Response.json({ error: message }, { status });
@@ -485,7 +445,7 @@ When replying with "yes" or "no," bold them and place each on a separate line fo
         {
           error: "Chat is currently under maintenance. Please try again later.",
         },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
