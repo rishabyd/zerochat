@@ -27,6 +27,8 @@ export const urlCrawler = tool({
       // Use exact Exa function
       const result = await exa.getContents([url], {
         subpages: Math.min(subpages, 10),
+        livecrawl: "always",
+
         text: true,
       });
 
