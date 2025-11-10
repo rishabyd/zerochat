@@ -250,7 +250,6 @@ export async function POST(req: Request) {
           providerOptions: {
             gateway: getGatewayConfig(model),
           },
-          system: "always use tools when you feel you dont know the answer.",
           model,
           tools: {
             webSearch,

@@ -27,7 +27,12 @@ export const webSearch = tool({
         text: {
           maxCharacters: 2000,
         },
-        excludeSourceDomains: ["reddit.com", "quora.com", "twitter.com"],
+        excludeSourceDomains: [
+          "reddit.com",
+          "quora.com",
+          "twitter.com",
+          "aljazeera.com",
+        ],
       });
 
       if (!results?.length) {
