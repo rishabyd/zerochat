@@ -1,34 +1,37 @@
 import { tool } from "ai";
-import { z } from "zod";
 import Exa from "exa-js";
+import { z } from "zod";
 
 const exa = new Exa(process.env.EXA_API_KEY);
 
 export const urlCrawler = tool({
   description:
-    "Crawl website and extract content from main page + subpages. Returns text, links, and metadata.",
+    "Crawl multiple websites and extract content from main pages + subpages. Returns text, links, and metadata for each URL.",
   inputSchema: z.object({
-    url: z.string().url().describe("URL to crawl"),
+    urls: z
+      .array(z.url())
+      .min(1)
+      .max(10)
+      .describe("Array of URLs strings to crawl (1-10 URLs)"),
     subpages: z
       .number()
       .optional()
       .default(5)
-      .describe("Number of subpages to crawl (1-10)"),
+      .describe("Number of subpages to crawl per URL (1-10)"),
     include_links: z
       .boolean()
       .optional()
       .default(true)
       .describe("Include links found"),
   }),
-  execute: async ({ url, subpages = 5, include_links = true }) => {
+  execute: async ({ urls, subpages = 5, include_links = true }) => {
     try {
-      console.log(`🕷️ Crawling: ${url} (with ${subpages} subpages)`);
+      console.log(
+        `🕷️ Crawling ${urls.length} URLs (with ${subpages} subpages each)`
+      );
 
-      // Use exact Exa function
-      const result = await exa.getContents([url], {
+      const result = await exa.getContents(urls, {
         subpages: Math.min(subpages, 10),
-        livecrawl: "always",
-
         text: true,
       });
 
@@ -39,35 +42,49 @@ export const urlCrawler = tool({
         };
       }
 
-      // Process all pages (main + subpages)
-      const pages = result.results.map((content) => ({
-        url: content.url || url,
-        title: content.title || "No title",
-        author: content.author || "",
-        published_date: content.publishedDate || "",
-        content: content.text || "",
-      }));
+      // Group results by original URL
+      const urlResults = urls.map((url) => {
+        const urlPages = result.results.filter(
+          (r) => r.url === url || r.url?.startsWith(url)
+        );
 
-      // Extract links if requested
-      let allLinks: string[] = [];
-      if (include_links) {
-        const linkMatches =
-          pages
-            .map((p) => p.content)
-            .join(" ")
-            .match(/https?:\/\/[^\s)]+/g) || [];
-        allLinks = Array.from(new Set(linkMatches)).slice(0, 50);
-      }
+        const pages = urlPages.map((content) => ({
+          url: content.url || url,
+          title: content.title || "No title",
+          author: content.author || "",
+          published_date: content.publishedDate || "",
+          content: content.text || "",
+        }));
 
-      console.log(`✅ Crawled ${pages.length} pages`);
+        // Extract links for this URL
+        let links: string[] = [];
+        if (include_links) {
+          const linkMatches =
+            pages
+              .map((p) => p.content)
+              .join(" ")
+              .match(/https?:\/\/[^\s)]+/g) || [];
+          links = Array.from(new Set(linkMatches)).slice(0, 50);
+        }
+
+        return {
+          url,
+          pages_crawled: pages.length,
+          pages,
+          links: include_links ? links : [],
+        };
+      });
+
+      console.log(
+        `✅ Crawled ${result.results.length} total pages from ${urls.length} URLs`
+      );
 
       return {
         success: true,
-        url,
         source: "exa_getcontents",
-        pages_crawled: pages.length,
-        data: pages,
-        links: include_links ? allLinks : [],
+        total_urls: urls.length,
+        total_pages: result.results.length,
+        results: urlResults,
       };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
