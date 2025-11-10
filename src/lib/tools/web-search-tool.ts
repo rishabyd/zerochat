@@ -20,10 +20,13 @@ export const webSearch = tool({
     try {
       const { results } = await exa.searchAndContents(query, {
         numResults,
-        livecrawl: "auto",
-        text: true,
-        highlights: true,
         type: "auto",
+        extras: {
+          links: 3,
+        },
+        text: {
+          maxCharacters: 2000,
+        },
         excludeSourceDomains: ["reddit.com", "quora.com", "twitter.com"],
       });
 
@@ -38,7 +41,7 @@ export const webSearch = tool({
         title: result.title,
         url: result.url,
         content: result.text,
-        highlights: result.highlights?.[0] || "",
+        links: result.extras.links,
         publishedDate: result.publishedDate,
         score: result.score,
       }));
