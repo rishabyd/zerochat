@@ -4,7 +4,6 @@ import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
 import { auth } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getSession } from "@/lib/services/user-sessions";
-import { apiDebugger } from "@/lib/tools/api-testing";
 import { urlCrawler } from "@/lib/tools/live-crawler";
 import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
@@ -255,7 +254,7 @@ export async function POST(req: Request) {
           model,
           tools: {
             webSearch,
-            apiDebugger,
+            // apiDebugger,
             urlCrawler,
           },
           stopWhen: [stepCountIs(10)],
