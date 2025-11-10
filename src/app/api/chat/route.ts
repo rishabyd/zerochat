@@ -6,7 +6,6 @@ import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getSession } from "@/lib/services/user-sessions";
 import { apiDebugger } from "@/lib/tools/api-testing";
 import { urlCrawler } from "@/lib/tools/live-crawler";
-import { pricingCalc } from "@/lib/tools/pricing-calculator";
 import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
@@ -256,7 +255,6 @@ export async function POST(req: Request) {
           model,
           tools: {
             webSearch,
-            pricingCalc,
             apiDebugger,
             urlCrawler,
           },
