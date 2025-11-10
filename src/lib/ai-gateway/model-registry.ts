@@ -9,11 +9,11 @@ import { z } from "zod";
 import { getGatewayConfig } from "./provider-options";
 
 export const HIGH_CHAT_MODELS: Record<number, string> = {
-  "1": "xai/grok-4-fast-non-reasoning",
-  "2": "xai/grok-4-fast-reasoning",
-  "3": "openai/gpt-4o-mini",
+  "1": "openai/gpt-oss-20b",
+  "2": "openai/gpt-5-nano",
+  "3": "xai/grok-4-fast-reasoning",
   "4": "zai/glm-4.6",
-  "5": "openai/o4-mini",
+  "5": "openai/gpt-5-mini",
   "6": "anthropic/claude-haiku-4.5",
   "7": "anthropic/claude-haiku-4.5",
   "8": "moonshotai/kimi-k2-thinking-turbo",
@@ -50,14 +50,14 @@ OUTPUT (JSON only, no other text):
 }`;
 
 export async function GetBestModel(
-  currentMessages: UIMessage<unknown, UIDataTypes, UITools>[],
+  currentMessages: UIMessage<unknown, UIDataTypes, UITools>[]
 ) {
   try {
     const model = "google/gemini-2.0-flash-lite";
     const { object } = await generateObject({
       system,
       model,
-      maxOutputTokens: 10,
+      maxOutputTokens: 20,
       temperature: 0,
       providerOptions: {
         gateway: getGatewayConfig(model),

@@ -1,11 +1,15 @@
 import { saveMessage } from "@/lib/actions/chat-actions";
 import { GetBestModel } from "@/lib/ai-gateway/model-registry";
+import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
+import { auth } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
-import { getCurrentUserProfile } from "@/lib/services/user-profile";
 import { getSession } from "@/lib/services/user-sessions";
+import { apiDebugger } from "@/lib/tools/api-testing";
+import { urlCrawler } from "@/lib/tools/live-crawler";
+import { pricingCalc } from "@/lib/tools/pricing-calculator";
+import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
-import { auth } from "@/lib/auth";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
 import {
   convertToModelMessages,
@@ -13,13 +17,8 @@ import {
   stepCountIs,
   streamText,
 } from "ai";
-import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
-import { webSearch } from "@/lib/tools/web-search-tool";
-import { pricingCalc } from "@/lib/tools/pricing-calculator";
-import { apiDebugger } from "@/lib/tools/api-testing";
-import { urlCrawler } from "@/lib/tools/live-crawler";
 const createAssistantMessage = (
-  content: string,
+  content: string
 ): UIMessage<unknown, UIDataTypes, UITools> => ({
   id: generateMessageId(),
   role: "assistant",
@@ -55,7 +54,7 @@ const logPartialResponse = async (
   userMessage: UIMessage<unknown, UIDataTypes, UITools>,
   partialResponse: string,
   model?: string,
-  complexity?: number,
+  complexity?: number
 ) => {
   try {
     // Validate partial response content
@@ -98,7 +97,7 @@ const logPartialResponse = async (
 
 // Handle streaming errors and convert to appropriate HTTP responses
 const handleStreamingError = (
-  error: StreamingError,
+  error: StreamingError
 ): { status: number; message: string } => {
   console.error("AI streaming failed:", error);
 
@@ -131,7 +130,7 @@ export async function POST(req: Request) {
     if (!userId)
       return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const userProfile = await getCurrentUserProfile(userId);
+    // const userProfile = await getCurrentUserProfile(userId);
 
     // Enforce plan usage limits before processing heavy work
 
@@ -170,7 +169,7 @@ export async function POST(req: Request) {
       cleanup();
       return Response.json(
         { error: "Request cancelled by client" },
-        { status: 499 },
+        { status: 499 }
       );
     }
 
@@ -192,7 +191,7 @@ export async function POST(req: Request) {
         cleanup();
         return Response.json(
           { error: "Session ID is required" },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -200,7 +199,7 @@ export async function POST(req: Request) {
         cleanup();
         return Response.json(
           { error: "Current message is required" },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -217,7 +216,7 @@ export async function POST(req: Request) {
         }));
 
       console.log(
-        `Session ${sessionId}: Loaded ${historyMessages.length} messages from database`,
+        `Session ${sessionId}: Loaded ${historyMessages.length} messages from database`
       );
 
       // Validate current message format and role
@@ -225,7 +224,7 @@ export async function POST(req: Request) {
         cleanup();
         return Response.json(
           { error: "Invalid user message" },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -243,7 +242,7 @@ export async function POST(req: Request) {
             void logPartialResponse(sessionId, currentMessage, partialResponse);
           }
         },
-        { once: true },
+        { once: true }
       );
       try {
         const messagesForRouter = messagesForAI.slice(-4);
@@ -253,6 +252,7 @@ export async function POST(req: Request) {
           providerOptions: {
             gateway: getGatewayConfig(model),
           },
+          system: "always use tools when you feel you dont know the answer.",
           model,
           tools: {
             webSearch,
@@ -276,7 +276,7 @@ export async function POST(req: Request) {
                 await logPartialResponse(
                   sessionId,
                   currentMessage,
-                  partialResponse,
+                  partialResponse
                 );
                 return;
               }
@@ -301,7 +301,7 @@ export async function POST(req: Request) {
                   }
                 ).responseMessages?.find(
                   (m: UIMessage<unknown, UIDataTypes, UITools>) =>
-                    m?.role === "assistant",
+                    m?.role === "assistant"
                 );
                 assistantContent = resp ? extractText(resp) : undefined;
               }
@@ -323,7 +323,7 @@ export async function POST(req: Request) {
 
               console.log(
                 "Provider metadata-",
-                JSON.stringify(await result.providerMetadata, null, 2),
+                JSON.stringify(await result.providerMetadata, null, 2)
               );
 
               // Log messages using new server actions
@@ -369,7 +369,7 @@ export async function POST(req: Request) {
                 currentMessage,
                 partialResponse,
                 model,
-                complexity,
+                complexity
               );
 
               // Don't throw here to avoid breaking the stream
@@ -386,7 +386,7 @@ export async function POST(req: Request) {
                 currentMessage,
                 partialResponse,
                 model,
-                complexity,
+                complexity
               );
             }
 
@@ -403,7 +403,7 @@ export async function POST(req: Request) {
               currentMessage,
               partialResponse,
               model,
-              complexity,
+              complexity
             );
           }
           cleanup();
@@ -426,7 +426,7 @@ export async function POST(req: Request) {
 
         // Enhanced error handling with proper abort detection
         const { status, message } = handleStreamingError(
-          error as StreamingError,
+          error as StreamingError
         );
 
         return Response.json({ error: message }, { status });
@@ -448,7 +448,7 @@ export async function POST(req: Request) {
         {
           error: "Chat is currently under maintenance. Please try again later.",
         },
-        { status: 503 },
+        { status: 503 }
       );
     }
 

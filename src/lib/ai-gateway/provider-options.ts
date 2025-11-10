@@ -20,10 +20,6 @@ export const getGatewayConfig = (model: string) => {
       order: ["openai", "azure"],
       only: ["openai", "azure"],
     },
-    "openai/gpt-4o": {
-      order: ["openai", "azure"],
-      only: ["openai", "azure"],
-    },
     "openai/o3-mini": {
       order: ["openai", "azure"],
       only: ["openai", "azure"],
@@ -31,6 +27,10 @@ export const getGatewayConfig = (model: string) => {
     "openai/o4-mini": {
       order: ["openai", "azure"],
       only: ["openai", "azure"],
+    },
+    "openai/gpt-oss-20b": {
+      order: ["groq", "bedrock"],
+      only: ["groq", "bedrock"],
     },
     "meta/llama-3.1-8b": {
       order: ["groq", "cerebras"],

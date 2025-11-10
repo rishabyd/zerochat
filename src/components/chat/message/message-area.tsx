@@ -5,6 +5,9 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
+import { Message, MessageContent } from "@/components/ai-elements/message";
+import { Response } from "@/components/ai-elements/response";
+import { Shimmer } from "@/components/ai-elements/shimmer";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { isToolUIPart } from "@/lib/utils/is-tool-part";
 import type { ToolUIPart, UIDataTypes, UIMessage, UITools } from "ai";
@@ -20,9 +23,6 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import MessageBubble from "./message-bubble";
-import { Shimmer } from "@/components/ai-elements/shimmer";
-import { Message, MessageContent } from "@/components/ai-elements/message";
-import { Response } from "@/components/ai-elements/response";
 
 export type ChatMessageType = UIMessage<unknown, UIDataTypes, UITools>;
 
@@ -53,12 +53,12 @@ const isReasoningPart = (part: MessagePart): part is ReasoningPart => {
 const isActiveReasoning = (part: ReasoningPart): boolean => {
   if (part.state) {
     return REASONING_ACTIVE_STATES.some((state) =>
-      part.state!.toLowerCase().includes(state),
+      part.state!.toLowerCase().includes(state)
     );
   }
   if (part.reasoning?.state) {
     return REASONING_ACTIVE_STATES.some((state) =>
-      part.reasoning!.state!.toLowerCase().includes(state),
+      part.reasoning!.state!.toLowerCase().includes(state)
     );
   }
   return !part.text || part.text.trim().length === 0;
@@ -114,7 +114,7 @@ type StatusIndicatorState = {
 };
 
 const getIndicatorState = (
-  messages: ChatMessageType[],
+  messages: ChatMessageType[]
 ): StatusIndicatorState => {
   const lastMsg = messages[messages.length - 1];
   if (!lastMsg || lastMsg.role !== "assistant") {
@@ -226,7 +226,7 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
   const shouldShowIndicator = thinking && !hasStreamingText;
 
   function isUserOrAssistant(
-    msg: ChatMessageType,
+    msg: ChatMessageType
   ): msg is ChatMessageType & { role: "user" | "assistant" } {
     return msg.role === "user" || msg.role === "assistant";
   }
@@ -237,7 +237,7 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
     (lastIndex, msg, index) => {
       return msg.role === "user" ? index : lastIndex;
     },
-    -1,
+    -1
   );
 
   return (
@@ -331,7 +331,7 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
                               >
                                 {block}
                               </div>
-                            ),
+                            )
                           )}
                         </div>
                       )}

@@ -52,7 +52,6 @@ function ChatPage({
       setStopResponse(false);
       setThinking(false);
     },
-    experimental_throttle: 50,
   });
 
   const displayMessages = useMemo(() => {
@@ -77,13 +76,13 @@ function ChatPage({
       role: "user" as const,
       parts: [{ type: "text", text }],
     }),
-    [],
+    []
   );
 
   const sendWithSession = useCallback(
     (
       message: { text: string },
-      options?: { body?: Record<string, unknown> },
+      options?: { body?: Record<string, unknown> }
     ) => {
       return sendMessage(message, {
         body: {
@@ -93,7 +92,7 @@ function ChatPage({
         },
       });
     },
-    [sendMessage, sessionId, createUserMessage],
+    [sendMessage, sessionId, createUserMessage]
   );
 
   const memoizedStop = useCallback(() => stop(), [stop]);
@@ -149,7 +148,7 @@ function ChatPage({
 
     if (error.message.includes("limit") || error.message.includes("429")) {
       toast.error(
-        "📊 You've reached your usage limit. Please upgrade to PRO for higher limits.",
+        "📊 You've reached your usage limit. Please upgrade to PRO for higher limits."
       );
       router.push("/");
     }

@@ -1,6 +1,6 @@
 import { tool } from "ai";
-import { z } from "zod";
 import Exa from "exa-js";
+import { z } from "zod";
 
 export const exa = new Exa(process.env.EXA_API_KEY);
 
@@ -45,7 +45,7 @@ export const webSearch = tool({
     } catch (err) {
       console.error("❌ webSearch failed:", err);
       throw new Error(
-        `Search failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+        `Search failed: ${err instanceof Error ? err.message : "Unknown error"}`
       );
     }
   },
