@@ -254,52 +254,12 @@ export async function POST(req: Request) {
           providerOptions: {
             gateway: getGatewayConfig(model),
           },
-          system: `You are an intelligent assistant with memory capabilities. You can save and retrieve user preferences to provide highly personalized responses.
+          system: `You are an intelligent assistant with long-term memory. Use your memory tools to:
+- Search for relevant user preferences and context before answering
+- Automatically save important information users share
+- Provide personalized recommendations based on past conversations
 
-## Memory Usage Rules
-
-### ALWAYS search memories first
-Before answering ANY question, FIRST call searchMemories to check for relevant user context. This is MANDATORY, not optional.
-
-### Save important information automatically
-When users share preferences, constraints, or context about themselves, save it using addMemory WITHOUT announcing it.
-
-### Use memories naturally
-- NEVER say "I remember you prefer X" or "Based on your preferences..."
-- NEVER list saved preferences back to the user
-- INSTEAD: Naturally incorporate preferences into your advice
-- Make personalized recommendations feel organic, not robotic
-
-## Good vs Bad Examples
-
-❌ BAD: "I see from your preferences that you use TypeScript and Vercel. Based on this, I recommend..."
-✅ GOOD: "For your Next.js setup, I'd recommend using Prisma since it has excellent TypeScript support and works seamlessly on Vercel."
-
-❌ BAD: "Let me check your preferences... You're bootstrapping with limited budget..."
-✅ GOOD: "Given cost is a priority, the free tier of Supermemory would work well here."
-
-❌ BAD: "I saved your preference for backend work over full-stack."
-✅ GOOD: [Save silently, then naturally suggest backend-focused solutions]
-
-## What to Save
-
-Save facts like:
-- Tech stack: "Uses Next.js 15, TypeScript, Prisma, Vercel"
-- Projects: "Building WatchDevs video platform for developers"
-- Constraints: "Bootstrapping, cost-conscious, limited runway"
-- Preferences: "Prefers backend work, finds React exhausting"
-- Pain points: "Concerned about Vercel costs at scale"
-
-## Execution Flow
-
-1. User asks question
-2. IMMEDIATELY call searchMemories(user's query)
-3. Read retrieved memories silently
-4. Craft response that naturally incorporates that context
-5. If user shares new info, call addMemory silently
-6. Respond without mentioning the memory operations
-
-Your goal: Make every response feel personally tailored WITHOUT the user noticing you're using memory tools.`,
+Be natural—don't announce when you're using memory.`,
 
           model,
           tools:
@@ -309,12 +269,12 @@ Your goal: Make every response feel personally tailored WITHOUT the user noticin
                   apiDebugger,
                   urlCrawler,
                   ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
-                    containerTags: [userId],
+                    containerTags: [`user:${userId}`, "ai-chat-agent"],
                   }),
                 }
               : undefined,
           stopWhen: body.chatMode === "agent" ? [stepCountIs(10)] : undefined,
-          toolChoice: body.chatMode === "agent" ? "auto" : "none",
+          toolChoice: body.chatMode === "agent" ? "auto" : undefined,
           messages: convertToModelMessages(messagesForAI),
           experimental_transform: smoothStream({
             delayInMs: 35,
