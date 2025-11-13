@@ -269,7 +269,7 @@ function MainInputBox({
           >
             <Sparkles className={`size-4  `} />
           </SelectTrigger>
-          <SelectContent className="rounded-2xl  ">
+          <SelectContent className="rounded-2xl border-2 bg-background/50 backdrop-blur-xl  ">
             {MODELS.map((model) => (
               <SelectItem
                 key={model.value}
