@@ -30,9 +30,12 @@ import SendButton from "./send-button";
 
 const MODELS = [
   { value: "auto", label: "Auto", icon: Sparkles },
-  { value: "gpt-5", label: "GPT-5", icon: Sparkles },
-  { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5", icon: Sparkles },
-  { value: "claude-haiku-4.5", label: "Claude Haiku 4.5", icon: Sparkles },
+  { value: "openai/gpt-5", label: "GPT-5", icon: Sparkles },
+  {
+    value: "anthropic/claude-haiku-4.5",
+    label: "anthropic/claude-sonnet-4.5",
+    icon: Sparkles,
+  },
 ] as const;
 
 type ModelValue = (typeof MODELS)[number]["value"];
