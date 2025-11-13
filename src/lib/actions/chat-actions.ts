@@ -7,14 +7,12 @@ export async function saveMessage({
   role,
   model,
   complexity,
-  webUsed,
 }: {
   sessionId: string;
   content: string;
   role: "AI" | "USER";
   model?: string;
   complexity?: number;
-  webUsed?: boolean;
 }) {
   // Validate input parameters
   if (!sessionId || typeof sessionId !== "string") {
@@ -28,7 +26,7 @@ export async function saveMessage({
   if (!role || !["AI", "USER"].includes(role)) {
     throw new Error("Invalid role");
   }
-  if (!webUsed || !model || !complexity) {
+  if (!model || !complexity) {
     throw new Error("fields missing ");
   }
 
@@ -53,7 +51,6 @@ export async function saveMessage({
         sessionId,
         content,
         model,
-        webUsed,
       });
       return message;
     }

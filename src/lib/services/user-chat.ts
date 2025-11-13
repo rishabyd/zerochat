@@ -30,13 +30,11 @@ export async function saveAiMessage({
   sessionId,
   content,
   model,
-  webUsed,
 }: {
   userId: string;
   sessionId: string;
   content: string;
   model: string;
-  webUsed: boolean;
 }) {
   if (!userId) {
     throw new Error(`userId missing!`);
@@ -50,7 +48,6 @@ export async function saveAiMessage({
       role: "AI",
       userId,
       modelUsed: model,
-      webUsed,
     },
   });
   return message;
