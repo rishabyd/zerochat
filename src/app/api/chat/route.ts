@@ -261,7 +261,7 @@ export async function POST(req: Request) {
             apiDebugger,
             urlCrawler,
             ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
-              projectId: userId,
+              containerTags: [userId],
             }),
           },
           stopWhen: [stepCountIs(10)],
