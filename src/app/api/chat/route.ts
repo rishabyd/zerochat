@@ -187,8 +187,7 @@ export async function POST(req: Request) {
         sessionId: string; // Chat session identifier
         chatMode: "agent" | "simple";
       };
-
-      const { sessionId, currentMessage } = body;
+      const { sessionId, currentMessage, chatMode } = body;
 
       if (!sessionId) {
         cleanup();
@@ -255,7 +254,7 @@ export async function POST(req: Request) {
           providerOptions: {
             gateway: getGatewayConfig(model),
           },
-          system: `You have option to craete user prefernces and memories plus also retrieve that memories so use memory tool when user query needs personalisation and give best response. always fetch user prefernces before answering user questions.`,
+          system: `You have option to craete user prefernces and memories plus also retrieve that memories so use memory tool when user query needs personalisation and give best response. always fetch user prefernces before answering user questions.make prefernces blend seamless and never make user feel that you are annowying him by telling his prefernces in raw form. only include prefernces in response and never tell them `,
 
           model,
           tools:
