@@ -27,13 +27,16 @@ export type ChatMessageType = UIMessage<unknown, UIDataTypes, UITools>;
 
 type MessagePart = ChatMessageType["parts"] extends Array<infer P> ? P : never;
 
+// Standard reasoning part structure across all providers
 type ReasoningPart = MessagePart & {
   type: "reasoning";
   text?: string;
+  textDelta?: string;
   state?: string;
   reasoning?: {
     state?: string;
     title?: string;
+    text?: string;
   };
 };
 
@@ -42,20 +45,40 @@ const TOOL_ACTIVE_STATES: Array<ToolUIPart["state"]> = [
   "input-available",
 ];
 
-const REASONING_ACTIVE_STATES = ["in-progress", "streaming", "pending"];
+// States that indicate active reasoning across all providers
+const REASONING_ACTIVE_STATES = [
+  "in-progress",
+  "streaming",
+  "pending",
+  "thinking",
+];
 
+// Type guard for reasoning parts - works across all providers
 const isReasoningPart = (part: MessagePart): part is ReasoningPart => {
   if (typeof part !== "object" || part === null) return false;
   return (part as { type?: unknown }).type === "reasoning";
 };
 
+// Robust detection of active reasoning across all providers
 const isActiveReasoning = (part: ReasoningPart): boolean => {
-  const state = part.state || part.reasoning?.state || "";
-  return (
-    REASONING_ACTIVE_STATES.some((s) => state.toLowerCase().includes(s)) ||
-    !part.text ||
-    part.text.trim().length === 0
+  // Check both part.state and part.reasoning.state
+  const partState = part.state?.toLowerCase() || "";
+  const reasoningState = part.reasoning?.state?.toLowerCase() || "";
+
+  // Active if state indicates streaming/in-progress
+  const hasActiveState = REASONING_ACTIVE_STATES.some(
+    (state) => partState.includes(state) || reasoningState.includes(state)
   );
+
+  if (hasActiveState) return true;
+
+  // Also consider active if no text content yet (initial streaming state)
+  const hasText =
+    (part.text && part.text.trim().length > 0) ||
+    (part.textDelta && part.textDelta.trim().length > 0) ||
+    (part.reasoning?.text && part.reasoning.text.trim().length > 0);
+
+  return !hasText;
 };
 
 type StatusIndicatorState = {
@@ -78,7 +101,7 @@ const getIndicatorState = (
   }
 
   for (const part of lastMsg.parts ?? []) {
-    // Tool detection
+    // Tool detection - prioritize over reasoning
     if (isToolUIPart(part) && TOOL_ACTIVE_STATES.includes(part.state)) {
       const toolName = part.type.startsWith("tool-")
         ? part.type.slice(5)
@@ -117,7 +140,7 @@ const getIndicatorState = (
       };
     }
 
-    // Reasoning detection - just indicator, no text
+    // Reasoning detection - works for OpenAI, Anthropic, DeepSeek, etc.
     if (isReasoningPart(part) && isActiveReasoning(part)) {
       return {
         type: "reasoning",
@@ -204,7 +227,7 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
                 </div>
               )}
 
-              {/* Simple indicator - no reasoning text */}
+              {/* Clean indicator - no reasoning text */}
               {shouldShowIndicator && index === lastUserMessageIndex && (
                 <div className="mx-auto max-w-[95vw] lg:max-w-[55vw] px-7">
                   <div className="bg-background/25 gap-3 p-3 px-4 rounded-lg text-sm w-fit">

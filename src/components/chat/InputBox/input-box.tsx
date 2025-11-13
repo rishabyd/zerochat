@@ -24,7 +24,7 @@ function MainInputBox({
 }: {
   sendMessage?: (
     message: { text: string },
-    options?: { body?: Record<string, unknown> },
+    options?: { body?: Record<string, unknown> }
   ) => void;
   status?: string;
   stopResponse?: () => void;
@@ -101,7 +101,7 @@ function MainInputBox({
       setCurrentSessionId,
       router,
       sendMessage,
-    ],
+    ]
   );
 
   const handleKeyDown = useCallback(
@@ -111,7 +111,7 @@ function MainInputBox({
         if (!disabled) handleSubmit(e);
       }
     },
-    [disabled, handleSubmit],
+    [disabled, handleSubmit]
   );
 
   const handleStop = useCallback(() => {
@@ -173,7 +173,7 @@ function MainInputBox({
           <Button
             variant="outline"
             className="hover:text-red-600 bg-accent border-2 h-full text-white
-                       hover:bg-red-500 rounded-none cursor-pointer hover:scale-105 duration-300"
+                       hover:bg-red-500 rounded-2xl cursor-pointer hover:scale-105 duration-300"
             onClick={handleStop}
             disabled={disabled}
           >
