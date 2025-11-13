@@ -242,7 +242,7 @@ export async function POST(req: Request) {
 - Automatically save important information users share
 - Provide personalized recommendations based on past conversations
 
-Be natural—don't announce when you're using memory.`,
+Be natural—don't announce when you're using memory.fetch memories in every user convo. `,
           model: finalModel!,
           tools:
             body.chatMode === "agent"
