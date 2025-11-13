@@ -9,6 +9,8 @@ export type ChatType = {
 export type payloadType = {
   prompt: string;
   mode?: string;
+  model?: string;
+  chatMode?: "agent" | "simple";
 };
 
 // Message structure for sending to API

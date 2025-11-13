@@ -50,7 +50,7 @@ function MainInputBox({
 }: {
   sendMessage?: (
     message: { text: string },
-    options?: { body?: Record<string, unknown> }
+    options?: { body?: Record<string, unknown> },
   ) => void;
   status?: string;
   stopResponse?: () => void;
@@ -66,11 +66,19 @@ function MainInputBox({
   const setThinking = useChatStore((s) => s.setThinking);
   const setCurrentSessionId = useChatStore((s) => s.setCurrentSessionId);
 
-  // Agent mode toggle state - always defaults to true
-  const [agentMode, setAgentMode] = useState(true);
+  // Global state for model and chatMode
+  const globalModel = usePayloadStore((s) => s.model);
+  const globalChatMode = usePayloadStore((s) => s.chatMode);
+  const setGlobalModel = usePayloadStore((s) => s.setModel);
+  const setGlobalChatMode = usePayloadStore((s) => s.setChatMode);
 
-  // Model selection state - always defaults to "auto"
-  const [selectedModel, setSelectedModel] = useState<ModelValue>("auto");
+  // Agent mode toggle state - synced with global store
+  const [agentMode, setAgentMode] = useState(globalChatMode === "agent");
+
+  // Model selection state - synced with global store
+  const [selectedModel, setSelectedModel] = useState<ModelValue>(
+    (globalModel as ModelValue) || "auto",
+  );
 
   const profile = useUserProfileStore((s) => s.profile);
   const profileLoading = useUserProfileStore((s) => s.isLoading);
@@ -81,6 +89,20 @@ function MainInputBox({
   useEffect(() => {
     setIsNavigating(false);
   }, [path]);
+
+  // Sync local state with global store whenever they change
+  useEffect(() => {
+    const newChatMode = agentMode ? "agent" : "simple";
+    if (newChatMode !== globalChatMode) {
+      setGlobalChatMode(newChatMode);
+    }
+  }, [agentMode, globalChatMode, setGlobalChatMode]);
+
+  useEffect(() => {
+    if (selectedModel !== globalModel) {
+      setGlobalModel(selectedModel);
+    }
+  }, [selectedModel, globalModel, setGlobalModel]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -101,9 +123,26 @@ function MainInputBox({
             return;
           }
 
-          setPrompt(sanitizeText(prompt));
+          const sanitizedPrompt = sanitizeText(prompt);
+          const messageOptions = {
+            body: {
+              chatMode: globalChatMode,
+              model: globalModel,
+            },
+          };
+
+          setPrompt(sanitizedPrompt);
           setCurrentSessionId(clientSessionId);
           router.replace(`/${clientSessionId}`);
+
+          // Send message immediately after navigation with model and chatMode
+          if (sendMessage) {
+            // Small delay to ensure navigation completes
+            setTimeout(() => {
+              sendMessage({ text: sanitizedPrompt }, messageOptions);
+              setPrompt("");
+            }, 100);
+          }
 
           // Background sync - don't await
           SyncClientSession({ sessionId: clientSessionId, title }).catch(() => {
@@ -122,10 +161,10 @@ function MainInputBox({
           { text: prompt },
           {
             body: {
-              chatMode: agentMode ? "agent" : "simple",
-              model: selectedModel, // Always has value, defaults to "auto"
+              chatMode: globalChatMode,
+              model: globalModel, // Always has value, defaults to "auto"
             },
-          }
+          },
         );
         setPrompt("");
       }
@@ -140,9 +179,9 @@ function MainInputBox({
       setCurrentSessionId,
       router,
       sendMessage,
-      agentMode,
-      selectedModel,
-    ]
+      globalChatMode,
+      globalModel,
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -152,7 +191,7 @@ function MainInputBox({
         if (!disabled) handleSubmit(e);
       }
     },
-    [disabled, handleSubmit]
+    [disabled, handleSubmit],
   );
 
   const handleStop = useCallback(() => {
@@ -201,7 +240,7 @@ function MainInputBox({
           pressed={agentMode}
           onPressedChange={setAgentMode}
           disabled={disabled}
-          className="data-[state=on]:bg-purple-500/10 data-[state=on]:border-purple-500/30 
+          className="data-[state=on]:bg-purple-500/10 data-[state=on]:border-purple-500/30
                      data-[state=off]:bg-blue-500/10 data-[state=off]:border-blue-500/30 border-2
                      transition-all duration-200 cursor-pointer rounded-2xl"
         >

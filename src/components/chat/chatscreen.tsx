@@ -37,6 +37,8 @@ function ChatPage({
 
   const initialPrompt = usePayloadStore((state) => state.prompt);
   const setPrompt = usePayloadStore((state) => state.setPrompt);
+  const globalModel = usePayloadStore((state) => state.model);
+  const globalChatMode = usePayloadStore((state) => state.chatMode);
 
   const Transport = useMemo(() => transport, []);
 
@@ -76,23 +78,25 @@ function ChatPage({
       role: "user" as const,
       parts: [{ type: "text", text }],
     }),
-    []
+    [],
   );
 
   const sendWithSession = useCallback(
     (
       message: { text: string },
-      options?: { body?: Record<string, unknown> }
+      options?: { body?: Record<string, unknown> },
     ) => {
       return sendMessage(message, {
         body: {
+          chatMode: globalChatMode || "agent", // Use global chatMode from store
+          model: globalModel || "auto", // Use global model from store
           ...(options?.body || {}),
           sessionId,
           currentMessage: createUserMessage(message.text),
         },
       });
     },
-    [sendMessage, sessionId, createUserMessage]
+    [sendMessage, sessionId, createUserMessage, globalChatMode, globalModel],
   );
 
   const memoizedStop = useCallback(() => stop(), [stop]);
@@ -148,7 +152,7 @@ function ChatPage({
 
     if (error.message.includes("limit") || error.message.includes("429")) {
       toast.error(
-        "📊 You've reached your usage limit. Please upgrade to PRO for higher limits."
+        "📊 You've reached your usage limit. Please upgrade to PRO for higher limits.",
       );
       router.push("/");
     }

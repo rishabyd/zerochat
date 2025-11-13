@@ -188,7 +188,7 @@ export async function POST(req: Request) {
         chatMode: "agent" | "simple";
         model: string;
       };
-      const { sessionId, currentMessage, chatMode, model = "auto" } = body;
+      const { sessionId, currentMessage, chatMode, model } = body;
       if (!sessionId) {
         cleanup();
         return Response.json(
