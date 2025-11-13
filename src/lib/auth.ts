@@ -13,6 +13,11 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
+  redirectTo: {
+    afterSignIn: "/",
+    afterSignUp: "/",
+    afterSignOut: "/sign-in",
+  },
 });
 
 export async function getServerSession() {

@@ -13,7 +13,6 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { toast } from "sonner";
 import { Button } from "../ui/button";
 import MainInputBox from "./InputBox/input-box";
 import MessageArea from "./message/message-area";
@@ -78,13 +77,13 @@ function ChatPage({
       role: "user" as const,
       parts: [{ type: "text", text }],
     }),
-    [],
+    []
   );
 
   const sendWithSession = useCallback(
     (
       message: { text: string },
-      options?: { body?: Record<string, unknown> },
+      options?: { body?: Record<string, unknown> }
     ) => {
       return sendMessage(message, {
         body: {
@@ -96,7 +95,7 @@ function ChatPage({
         },
       });
     },
-    [sendMessage, sessionId, createUserMessage, globalChatMode, globalModel],
+    [sendMessage, sessionId, createUserMessage, globalChatMode, globalModel]
   );
 
   const memoizedStop = useCallback(() => stop(), [stop]);
@@ -146,17 +145,6 @@ function ChatPage({
       setThinking(false);
     }
   }, [status, setStopResponse, setThinking]);
-
-  useEffect(() => {
-    if (!error) return;
-
-    if (error.message.includes("limit") || error.message.includes("429")) {
-      toast.error(
-        "📊 You've reached your usage limit. Please upgrade to PRO for higher limits.",
-      );
-      router.push("/");
-    }
-  }, [error, router]);
 
   return (
     <div className="fixed inset-0 bg-input overflow-hidden flex flex-col md:relative md:h-full scrollbar-none">

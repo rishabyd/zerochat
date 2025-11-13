@@ -1,11 +1,12 @@
 import ChatPageHeader from "@/components/chat/chat-page-header";
 import MainInputBox from "@/components/chat/InputBox/input-box";
 import { getServerUserId } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function ChatHomePage() {
   const userId = await getServerUserId();
   if (!userId) {
-    return null;
+    redirect("/sign-in");
   }
 
   return (
