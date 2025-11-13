@@ -1,12 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
 import { SyncClientSession } from "@/lib/actions/chatSession-action";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { usePayloadStore } from "@/lib/store/usePayloadStore";
 import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { generateClientSessionId, isValidSessionId } from "@/lib/utils";
 import { sanitizeText } from "@/lib/utils/sanitize";
-import { Forward, SquareDashed } from "lucide-react";
+import { Forward, MessageCircleMore, SquareDashed, Wrench } from "lucide-react";
 import { motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -40,8 +41,10 @@ function MainInputBox({
   const setThinking = useChatStore((s) => s.setThinking);
   const setCurrentSessionId = useChatStore((s) => s.setCurrentSessionId);
 
-  const profile = useUserProfileStore((s) => s.profile);
+  // Agent mode toggle state
+  const [agentMode, setAgentMode] = useState(false);
 
+  const profile = useUserProfileStore((s) => s.profile);
   const profileLoading = useUserProfileStore((s) => s.isLoading);
 
   const isReady = (!status || status === "ready") && !disabled;
@@ -85,9 +88,16 @@ function MainInputBox({
         return;
       }
 
-      // Send message in existing session
+      // Send message in existing session with chat mode
       if (sendMessage) {
-        sendMessage({ text: prompt });
+        sendMessage(
+          { text: prompt },
+          {
+            body: {
+              chatMode: agentMode ? "agent" : "simple", // Pass mode to API
+            },
+          }
+        );
         setPrompt("");
       }
     },
@@ -101,6 +111,7 @@ function MainInputBox({
       setCurrentSessionId,
       router,
       sendMessage,
+      agentMode, // Add to dependencies
     ]
   );
 
@@ -125,7 +136,7 @@ function MainInputBox({
 
   const placeholderText = disabled
     ? "Chat is currently unavailable"
-    : "Ask anything";
+    : "Ask anything...";
 
   return (
     <motion.form
@@ -133,7 +144,7 @@ function MainInputBox({
       layout
       onSubmit={handleSubmit}
       className={`w-[96vw] origin-center rounded-3xl lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
-                 h-fit flex p-2 gap-2 border-2  bg-sidebar ${
+                 h-fit flex p-2 gap-2 border-2 items-center bg-sidebar ${
                    disabled ? "cursor-not-allowed" : ""
                  }`}
     >
@@ -150,6 +161,33 @@ function MainInputBox({
         minRows={1}
         disabled={disabled}
       />
+
+      {/* Agent Mode Toggle */}
+      <div className="flex h-full items-center">
+        <Toggle
+          aria-label="Toggle agent mode"
+          size="default"
+          variant="outline"
+          pressed={agentMode}
+          onPressedChange={setAgentMode}
+          disabled={disabled}
+          className="data-[state=on]:bg-purple-500/10 data-[state=on]:border-purple-500 
+                     data-[state=off]:bg-blue-500/10 data-[state=off]:border-blue-500
+                     transition-all duration-200 cursor-pointer  rounded-2xl"
+        >
+          {agentMode ? (
+            <div className="flex px-1.5 gap-1 items-center">
+              <Wrench className="size-4 mr-1 text-purple-500" />
+              <span className="text-sm text-purple-500 font-medium">Agent</span>
+            </div>
+          ) : (
+            <div className="flex px-1.5 gap-1 items-center">
+              <MessageCircleMore className="size-4 mr-1 text-blue-500" />
+              <span className="text-sm text-blue-500 font-medium">Chat</span>
+            </div>
+          )}
+        </Toggle>
+      </div>
 
       <motion.div
         layout

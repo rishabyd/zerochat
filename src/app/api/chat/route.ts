@@ -185,7 +185,9 @@ export async function POST(req: Request) {
       const body = (await req.json()) as {
         currentMessage: UIMessage<unknown, UIDataTypes, UITools>; // Current user message
         sessionId: string; // Chat session identifier
+        chatMode: "agent" | "simple";
       };
+
       const { sessionId, currentMessage } = body;
 
       if (!sessionId) {
@@ -256,16 +258,19 @@ export async function POST(req: Request) {
           system: `You have option to craete user prefernces and memories plus also retrieve that memories so use memory tool when user query needs personalisation and give best response.`,
 
           model,
-          tools: {
-            webSearch,
-            apiDebugger,
-            urlCrawler,
-            ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
-              containerTags: [userId],
-            }),
-          },
-          stopWhen: [stepCountIs(10)],
-          toolChoice: "auto",
+          tools:
+            body.chatMode === "agent"
+              ? {
+                  webSearch,
+                  apiDebugger,
+                  urlCrawler,
+                  ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
+                    containerTags: [userId],
+                  }),
+                }
+              : undefined,
+          stopWhen: body.chatMode === "agent" ? [stepCountIs(10)] : undefined,
+          toolChoice: body.chatMode === "agent" ? "auto" : "none",
           messages: convertToModelMessages(messagesForAI),
           experimental_transform: smoothStream({
             delayInMs: 35,

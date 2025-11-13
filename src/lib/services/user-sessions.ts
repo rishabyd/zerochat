@@ -39,7 +39,7 @@ export async function getSession(userId: string, sessionId: string) {
 
       messages: {
         orderBy: { createdAt: "asc" },
-        take: 50,
+        take: 22,
       },
     },
   });
