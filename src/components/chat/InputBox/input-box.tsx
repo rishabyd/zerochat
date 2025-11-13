@@ -7,7 +7,7 @@ import { usePayloadStore } from "@/lib/store/usePayloadStore";
 import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { generateClientSessionId, isValidSessionId } from "@/lib/utils";
 import { sanitizeText } from "@/lib/utils/sanitize";
-import { Forward, MessageCircleMore, SquareDashed, Wrench } from "lucide-react";
+import { Forward, Frame, MessageCircleMore, SquareDashed } from "lucide-react";
 import { motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -171,17 +171,17 @@ function MainInputBox({
           pressed={agentMode}
           onPressedChange={setAgentMode}
           disabled={disabled}
-          className="data-[state=on]:bg-purple-500/10 data-[state=on]:border-purple-500 
-                     data-[state=off]:bg-blue-500/10 data-[state=off]:border-blue-500
+          className="data-[state=on]:bg-purple-500/10 data-[state=on]:border-purple-500/30 
+                     data-[state=off]:bg-blue-500/10 data-[state=off]:border-blue-500/30 border-2
                      transition-all duration-200 cursor-pointer  rounded-2xl"
         >
           {agentMode ? (
-            <div className="flex  gap-1 items-center">
-              <Wrench className="size-5  text-purple-500" />
+            <div className="flex px-1 gap-1 items-center">
+              <Frame className="size-5  text-purple-500" />
               <span className="text-sm text-purple-500 font-medium">Agent</span>
             </div>
           ) : (
-            <div className="flex  gap-1 items-center">
+            <div className="flex px-1 gap-1 items-center">
               <MessageCircleMore className="size-5  text-blue-500" />
               <span className="text-sm text-blue-500 font-medium">Chat</span>
             </div>
