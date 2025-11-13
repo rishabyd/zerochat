@@ -269,12 +269,12 @@ function MainInputBox({
           >
             <Sparkles className={`size-4  `} />
           </SelectTrigger>
-          <SelectContent className="rounded-2xl border-2 bg-background/50 backdrop-blur-xl  ">
+          <SelectContent className="rounded-2xl border-2 bg-background/70 backdrop-blur-lg  ">
             {MODELS.map((model) => (
               <SelectItem
                 key={model.value}
                 value={model.value}
-                className="cursor-pointer rounded-xl"
+                className="cursor-pointer  hover:bg-accent/30   rounded-2xl"
               >
                 {model.label}
               </SelectItem>
