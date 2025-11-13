@@ -11,8 +11,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { useSession } from "@/lib/auth-client";
+import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -39,8 +39,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
       collapsible="icon"
-      variant="sidebar"
-      className={`!border-r-2 !bg-sidebar shadow-md shadow-background/50 ${
+      variant="inset"
+      className={`!border-r-2  shadow-md shadow-background/50 ${
         isMobile
           ? "fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] lg:relative lg:w-auto  overflow-x-hidden"
           : ""
