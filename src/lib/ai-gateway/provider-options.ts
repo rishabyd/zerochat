@@ -37,8 +37,8 @@ export const getGatewayConfig = (model: string) => {
       only: ["groq", "cerebras"],
     },
     "google/gemini-2.0-flash-lite": {
-      order: ["vertex", "google"],
-      only: ["vertex", "google"],
+      order: ["google", "vertex"],
+      only: ["google", "vertex"],
     },
     "anthropic/claude-3-haiku": {
       order: ["anthropic", "vertex", "bedrock"],
