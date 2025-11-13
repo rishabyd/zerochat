@@ -81,14 +81,15 @@ export async function GetBestModel(
     console.log("Parsed complexity:", complexityNum);
 
     return {
-      model: HIGH_CHAT_MODELS[complexityNum as keyof typeof HIGH_CHAT_MODELS],
+      autoModel:
+        HIGH_CHAT_MODELS[complexityNum as keyof typeof HIGH_CHAT_MODELS],
       complexity: complexityNum,
     };
   } catch (error) {
     console.warn(`JSON parsing failed:`, error);
     // Fallback to default values
     return {
-      model: HIGH_CHAT_MODELS[3],
+      autoModel: HIGH_CHAT_MODELS[3],
       complexity: 3,
     };
   }

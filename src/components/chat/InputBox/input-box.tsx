@@ -1,5 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import { SyncClientSession } from "@/lib/actions/chatSession-action";
 import { useChatStore } from "@/lib/store/useChatStore";
@@ -7,7 +14,13 @@ import { usePayloadStore } from "@/lib/store/usePayloadStore";
 import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { generateClientSessionId, isValidSessionId } from "@/lib/utils";
 import { sanitizeText } from "@/lib/utils/sanitize";
-import { Forward, Frame, MessageCircleMore, SquareDashed } from "lucide-react";
+import {
+  Forward,
+  Frame,
+  MessageCircleMore,
+  Sparkles,
+  SquareDashed,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -15,6 +28,19 @@ import TextareaAutosize from "react-textarea-autosize";
 import { toast } from "sonner";
 import { InputBoxSkeleton } from "./input-box-skeleton";
 import SendButton from "./send-button";
+
+const MODELS = [
+  { value: "auto", label: "Auto", icon: Sparkles },
+  { value: "gpt-4o-mini", label: "GPT-4o Mini", icon: Sparkles },
+  { value: "o4-mini", label: "O4 Mini", icon: Sparkles },
+  { value: "gpt-5", label: "GPT-5", icon: Sparkles },
+  { value: "gpt-5-mini", label: "GPT-5 Mini", icon: Sparkles },
+  { value: "o3", label: "O3", icon: Sparkles },
+  { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5", icon: Sparkles },
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash", icon: Sparkles },
+] as const;
+
+type ModelValue = (typeof MODELS)[number]["value"];
 
 function MainInputBox({
   sendMessage,
@@ -41,8 +67,11 @@ function MainInputBox({
   const setThinking = useChatStore((s) => s.setThinking);
   const setCurrentSessionId = useChatStore((s) => s.setCurrentSessionId);
 
-  // Agent mode toggle state
+  // Agent mode toggle state - always defaults to true
   const [agentMode, setAgentMode] = useState(true);
+
+  // Model selection state - always defaults to "auto"
+  const [selectedModel, setSelectedModel] = useState<ModelValue>("auto");
 
   const profile = useUserProfileStore((s) => s.profile);
   const profileLoading = useUserProfileStore((s) => s.isLoading);
@@ -88,13 +117,14 @@ function MainInputBox({
         return;
       }
 
-      // Send message in existing session with chat mode
+      // Send message with chat mode AND model selection
       if (sendMessage) {
         sendMessage(
           { text: prompt },
           {
             body: {
-              chatMode: agentMode ? "agent" : "simple", // Pass mode to API
+              chatMode: agentMode ? "agent" : "simple",
+              model: selectedModel, // Always has value, defaults to "auto"
             },
           }
         );
@@ -111,7 +141,8 @@ function MainInputBox({
       setCurrentSessionId,
       router,
       sendMessage,
-      agentMode, // Add to dependencies
+      agentMode,
+      selectedModel,
     ]
   );
 
@@ -162,6 +193,36 @@ function MainInputBox({
         disabled={disabled}
       />
 
+      {/* Model Selector - Clean */}
+      <div className="flex h-full items-center">
+        <Select
+          value={selectedModel}
+          onValueChange={(value: ModelValue) => setSelectedModel(value)}
+          disabled={disabled}
+        >
+          <SelectTrigger
+            className="h-11 w-[130px] border-2 rounded-2xl bg-sidebar cursor-pointer hover:bg-accent/50 
+                       transition-colors focus:ring-0 focus:ring-offset-0"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-4" />
+              <SelectValue />
+            </div>
+          </SelectTrigger>
+          <SelectContent className="rounded-2xl">
+            {MODELS.map((model) => (
+              <SelectItem
+                key={model.value}
+                value={model.value}
+                className="cursor-pointer rounded-xl"
+              >
+                {model.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Agent Mode Toggle */}
       <div className="flex h-full items-center">
         <Toggle
@@ -173,16 +234,16 @@ function MainInputBox({
           disabled={disabled}
           className="data-[state=on]:bg-purple-500/10 data-[state=on]:border-purple-500/30 
                      data-[state=off]:bg-blue-500/10 data-[state=off]:border-blue-500/30 border-2
-                     transition-all duration-200 cursor-pointer  rounded-2xl"
+                     transition-all duration-200 cursor-pointer rounded-2xl"
         >
           {agentMode ? (
             <div className="flex px-1 gap-1 items-center">
-              <Frame className="size-5  text-purple-500" />
+              <Frame className="size-5 text-purple-500" />
               <span className="text-sm text-purple-500 font-medium">Agent</span>
             </div>
           ) : (
             <div className="flex px-1 gap-1 items-center">
-              <MessageCircleMore className="size-5  text-blue-500" />
+              <MessageCircleMore className="size-5 text-blue-500" />
               <span className="text-sm text-blue-500 font-medium">Chat</span>
             </div>
           )}

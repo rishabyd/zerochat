@@ -186,9 +186,9 @@ export async function POST(req: Request) {
         currentMessage: UIMessage<unknown, UIDataTypes, UITools>; // Current user message
         sessionId: string; // Chat session identifier
         chatMode: "agent" | "simple";
+        model: string;
       };
-      const { sessionId, currentMessage, chatMode } = body;
-
+      const { sessionId, currentMessage, chatMode, model = "auto" } = body;
       if (!sessionId) {
         cleanup();
         return Response.json(
@@ -247,12 +247,17 @@ export async function POST(req: Request) {
         { once: true }
       );
       try {
-        const messagesForRouter = messagesForAI.slice(-4);
-        const { model, complexity } = await GetBestModel(messagesForRouter);
+        const messagesForRouter = messagesForAI.slice(-20);
 
+        const modelResult =
+          model === "auto" ? await GetBestModel(messagesForRouter) : null;
+        const autoModel = modelResult?.autoModel;
+        const complexity = modelResult?.complexity;
+        console.log("model final-", autoModel, model);
+        const finalModel = model === "auto" ? autoModel : model;
         const result = streamText({
           providerOptions: {
-            gateway: getGatewayConfig(model),
+            gateway: getGatewayConfig(finalModel!),
           },
           system: `You are an intelligent assistant with long-term memory. Use your memory tools to:
 - Search for relevant user preferences and context before answering
@@ -261,7 +266,7 @@ export async function POST(req: Request) {
 
 Be natural—don't announce when you're using memory.`,
 
-          model,
+          model: finalModel!,
           tools:
             body.chatMode === "agent"
               ? {
@@ -354,7 +359,7 @@ Be natural—don't announce when you're using memory.`,
                     userId,
                     sessionId,
                     content: assistantContent,
-                    model,
+                    model: finalModel!,
                     webUsed: false,
                   });
 
@@ -381,7 +386,7 @@ Be natural—don't announce when you're using memory.`,
                 sessionId,
                 currentMessage,
                 partialResponse,
-                model,
+                finalModel,
                 complexity
               );
 
@@ -389,7 +394,10 @@ Be natural—don't announce when you're using memory.`,
             }
           },
           onChunk: async (e) => {
-            partialResponse = "";
+            // Accumulate partial response for abort handling
+            if (e.chunk?.type === "text-delta") {
+              partialResponse += e.chunk.text;
+            }
           },
           onError: async (_error) => {
             // Log partial response and error metrics
@@ -398,7 +406,7 @@ Be natural—don't announce when you're using memory.`,
                 sessionId,
                 currentMessage,
                 partialResponse,
-                model,
+                finalModel,
                 complexity
               );
             }
@@ -415,7 +423,7 @@ Be natural—don't announce when you're using memory.`,
               sessionId,
               currentMessage,
               partialResponse,
-              model,
+              finalModel,
               complexity
             );
           }
