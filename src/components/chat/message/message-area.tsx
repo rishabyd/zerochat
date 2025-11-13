@@ -116,8 +116,9 @@ const getIndicatorState = (
       const isPricingSearch = toolName.toLowerCase().includes("pricingcalc");
       const isLiveUrlCrawling = toolName.toLowerCase().includes("urlcrawler");
       const isApiDebugger = toolName.toLowerCase().includes("apidebugger");
-      const isFetchMemory = toolName.toLowerCase().includes("searchMemories");
-      const isSavingMemory = toolName.toLowerCase().includes("addMemory");
+      const isFetchMemory = toolName === "searchMemories";
+      const isSavingMemory = toolName === "addMemory";
+
       let Icon = Wrench;
       let label = `Using ${toolName}...`;
 

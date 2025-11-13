@@ -42,7 +42,7 @@ function MainInputBox({
   const setCurrentSessionId = useChatStore((s) => s.setCurrentSessionId);
 
   // Agent mode toggle state
-  const [agentMode, setAgentMode] = useState(false);
+  const [agentMode, setAgentMode] = useState(true);
 
   const profile = useUserProfileStore((s) => s.profile);
   const profileLoading = useUserProfileStore((s) => s.isLoading);
