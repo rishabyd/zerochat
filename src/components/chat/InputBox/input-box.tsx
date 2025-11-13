@@ -166,7 +166,7 @@ function MainInputBox({
       <div className="flex h-full items-center">
         <Toggle
           aria-label="Toggle agent mode"
-          size="default"
+          size="lg"
           variant="outline"
           pressed={agentMode}
           onPressedChange={setAgentMode}
@@ -176,13 +176,13 @@ function MainInputBox({
                      transition-all duration-200 cursor-pointer  rounded-2xl"
         >
           {agentMode ? (
-            <div className="flex px-1.5 gap-1 items-center">
-              <Wrench className="size-4 mr-1 text-purple-500" />
+            <div className="flex  gap-1 items-center">
+              <Wrench className="size-5  text-purple-500" />
               <span className="text-sm text-purple-500 font-medium">Agent</span>
             </div>
           ) : (
-            <div className="flex px-1.5 gap-1 items-center">
-              <MessageCircleMore className="size-4 mr-1 text-blue-500" />
+            <div className="flex  gap-1 items-center">
+              <MessageCircleMore className="size-5  text-blue-500" />
               <span className="text-sm text-blue-500 font-medium">Chat</span>
             </div>
           )}
