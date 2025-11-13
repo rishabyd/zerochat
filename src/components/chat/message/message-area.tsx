@@ -15,13 +15,12 @@ import {
   ArrowBigUp,
   Banknote,
   Brain,
-  ChevronDown,
   Globe,
   LoaderPinwheel,
   TextSelect,
   Wrench,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import MessageBubble from "./message-bubble";
 
 export type ChatMessageType = UIMessage<unknown, UIDataTypes, UITools>;
@@ -51,57 +50,12 @@ const isReasoningPart = (part: MessagePart): part is ReasoningPart => {
 };
 
 const isActiveReasoning = (part: ReasoningPart): boolean => {
-  if (part.state) {
-    return REASONING_ACTIVE_STATES.some((state) =>
-      part.state!.toLowerCase().includes(state)
-    );
-  }
-  if (part.reasoning?.state) {
-    return REASONING_ACTIVE_STATES.some((state) =>
-      part.reasoning!.state!.toLowerCase().includes(state)
-    );
-  }
-  return !part.text || part.text.trim().length === 0;
-};
-
-const stringFromUnknown = (value: unknown): string | null => {
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "toString" in value &&
-    typeof (value as { toString: () => string }).toString === "function"
-  ) {
-    const rendered = (value as { toString: () => string }).toString();
-    if (rendered !== "[object Object]") {
-      return rendered;
-    }
-  }
-
-  return null;
-};
-
-const extractTextFromPart = (part: MessagePart): string | null => {
-  if (typeof part !== "object" || part === null) return null;
-
-  const candidates: unknown[] = [];
-  if ("text" in part) candidates.push((part as { text?: unknown }).text);
-  if ("delta" in part) candidates.push((part as { delta?: unknown }).delta);
-  if ("textDelta" in part)
-    candidates.push((part as { textDelta?: unknown }).textDelta);
-  if ("value" in part) candidates.push((part as { value?: unknown }).value);
-
-  for (const candidate of candidates) {
-    const asString = stringFromUnknown(candidate);
-    if (asString && asString.trim().length > 0) {
-      return asString;
-    }
-  }
-
-  return null;
+  const state = part.state || part.reasoning?.state || "";
+  return (
+    REASONING_ACTIVE_STATES.some((s) => state.toLowerCase().includes(s)) ||
+    !part.text ||
+    part.text.trim().length === 0
+  );
 };
 
 type StatusIndicatorState = {
@@ -109,8 +63,6 @@ type StatusIndicatorState = {
   Icon: React.ComponentType<{ className?: string }>;
   label: string;
   metadata?: string;
-  streamingContent?: string;
-  completedReasoningBlocks?: string[]; // All completed reasoning chunks
 };
 
 const getIndicatorState = (
@@ -125,10 +77,8 @@ const getIndicatorState = (
     };
   }
 
-  const completedReasoningBlocks: string[] = [];
-  let activeReasoningContent: string | undefined;
-
   for (const part of lastMsg.parts ?? []) {
+    // Tool detection
     if (isToolUIPart(part) && TOOL_ACTIVE_STATES.includes(part.state)) {
       const toolName = part.type.startsWith("tool-")
         ? part.type.slice(5)
@@ -167,35 +117,20 @@ const getIndicatorState = (
       };
     }
 
-    // Collect all reasoning blocks (active + completed)
-    if (isReasoningPart(part)) {
-      const reasoningText = extractTextFromPart(part);
-      if (reasoningText && reasoningText.trim().length > 0) {
-        if (isActiveReasoning(part)) {
-          activeReasoningContent = reasoningText;
-        } else {
-          completedReasoningBlocks.push(reasoningText);
-        }
-      }
+    // Reasoning detection - just indicator, no text
+    if (isReasoningPart(part) && isActiveReasoning(part)) {
+      return {
+        type: "reasoning",
+        Icon: Brain,
+        label: "Reasoning...",
+      };
     }
-  }
-
-  // If there's active reasoning, show it
-  if (activeReasoningContent !== undefined) {
-    return {
-      type: "reasoning",
-      Icon: Brain,
-      label: "Reasoning...",
-      streamingContent: activeReasoningContent,
-      completedReasoningBlocks,
-    };
   }
 
   return {
     type: "thinking",
     Icon: LoaderPinwheel,
     label: "Thinking...",
-    completedReasoningBlocks,
   };
 };
 
@@ -206,7 +141,6 @@ interface MessageAreaProps {
 export default function MessageAreaComponent({ messages }: MessageAreaProps) {
   const thinking = useChatStore((s) => s.thinking);
   const error = useChatStore((s) => s.error);
-  const [reasoningExpanded, setReasoningExpanded] = useState(false);
 
   const indicatorState = useMemo(() => getIndicatorState(messages), [messages]);
 
@@ -244,8 +178,6 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
     <Conversation className="w-full h-full flex-1 relative">
       <ConversationContent className="flex flex-col pt-9 lg:pt-0 w-full">
         {filteredMessages.map((msg, index) => {
-          const isLastMessage = index === filteredMessages.length - 1;
-
           return (
             <div key={`${msg.id ?? "msg"}-${index}`} className="relative">
               {msg.role === "user" ? (
@@ -256,21 +188,15 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
                     <MessageContent>
                       {msg.parts.map((part, partIndex) => {
                         if (part.type === "text") {
-                          const textContent = extractTextFromPart(part);
+                          const text = (part as { text?: string }).text;
                           return (
-                            textContent && (
+                            text && (
                               <Response key={`text-${partIndex}`}>
-                                {textContent}
+                                {text}
                               </Response>
                             )
                           );
                         }
-
-                        // Skip ALL reasoning rendering in message flow - goes to indicator only
-                        if (part.type === "reasoning") {
-                          return null;
-                        }
-
                         return null;
                       })}
                     </MessageContent>
@@ -278,63 +204,14 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
                 </div>
               )}
 
-              {/* UNIFIED STATUS INDICATOR - handles everything */}
+              {/* Simple indicator - no reasoning text */}
               {shouldShowIndicator && index === lastUserMessageIndex && (
                 <div className="mx-auto max-w-[95vw] lg:max-w-[55vw] px-7">
-                  <div className="bg-background/25 gap-3 p-3 px-4 rounded-lg text-sm transition-opacity duration-100 w-fit max-w-lg">
-                    {/* Header */}
+                  <div className="bg-background/25 gap-3 p-3 px-4 rounded-lg text-sm w-fit">
                     <div className="flex items-center gap-2">
                       <indicatorState.Icon className="size-5 animate-pulse flex-shrink-0" />
                       <Shimmer>{indicatorState.label}</Shimmer>
                     </div>
-
-                    {/* Active streaming reasoning - FULL TEXT, NO CLAMP */}
-                    {indicatorState.streamingContent && (
-                      <div className="text-xs text-muted-foreground mt-2 pl-7 border-l border-muted-foreground/30 italic max-h-40 overflow-y-auto whitespace-pre-wrap break-words">
-                        {indicatorState.streamingContent}
-                      </div>
-                    )}
-
-                    {/* Completed reasoning toggle */}
-                    {indicatorState.completedReasoningBlocks &&
-                      indicatorState.completedReasoningBlocks.length > 0 && (
-                        <button
-                          onClick={() =>
-                            setReasoningExpanded(!reasoningExpanded)
-                          }
-                          className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pl-7"
-                        >
-                          <ChevronDown
-                            className={`size-4 transition-transform ${
-                              reasoningExpanded ? "rotate-180" : ""
-                            }`}
-                          />
-                          <span>
-                            {indicatorState.completedReasoningBlocks.length}{" "}
-                            reasoning block
-                            {indicatorState.completedReasoningBlocks.length > 1
-                              ? "s"
-                              : ""}
-                          </span>
-                        </button>
-                      )}
-
-                    {/* Expanded completed reasoning - FULL TEXT, NO CLAMP */}
-                    {reasoningExpanded &&
-                      indicatorState.completedReasoningBlocks && (
-                        <div className="mt-2 space-y-3 pl-7 border-l border-muted-foreground/30">
-                          {indicatorState.completedReasoningBlocks.map(
-                            (block, idx) => (
-                              <div
-                                key={idx}
-                                className="text-xs text-muted-foreground max-h-60 overflow-y-auto whitespace-pre-wrap break-words"
-                              >
-                                {block}
-                              </div>
-                            )
-                          )}
-                        </div>
-                      )}
                   </div>
                 </div>
               )}
