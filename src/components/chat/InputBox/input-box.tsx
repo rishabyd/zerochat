@@ -5,7 +5,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import { SyncClientSession } from "@/lib/actions/chatSession-action";
@@ -193,36 +192,6 @@ function MainInputBox({
         disabled={disabled}
       />
 
-      {/* Model Selector - Clean */}
-      <div className="flex h-full items-center">
-        <Select
-          value={selectedModel}
-          onValueChange={(value: ModelValue) => setSelectedModel(value)}
-          disabled={disabled}
-        >
-          <SelectTrigger
-            className="h-11 w-[130px] border-2 rounded-2xl bg-sidebar cursor-pointer hover:bg-accent/50 
-                       transition-colors focus:ring-0 focus:ring-offset-0"
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="size-4" />
-              <SelectValue />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="rounded-2xl">
-            {MODELS.map((model) => (
-              <SelectItem
-                key={model.value}
-                value={model.value}
-                className="cursor-pointer rounded-xl"
-              >
-                {model.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       {/* Agent Mode Toggle */}
       <div className="flex h-full items-center">
         <Toggle
@@ -249,7 +218,31 @@ function MainInputBox({
           )}
         </Toggle>
       </div>
-
+      {/* Model Selector - Clean */}
+      <div className="flex h-full items-center">
+        <Select
+          value={selectedModel}
+          onValueChange={(value: ModelValue) => setSelectedModel(value)}
+          disabled={disabled}
+        >
+          <SelectTrigger
+            className={`h-full  data-[size=default]:h-10 border-2 rounded-2xl  cursor-pointer`}
+          >
+            <Sparkles className={`size-4  `} />
+          </SelectTrigger>
+          <SelectContent className="rounded-2xl  ">
+            {MODELS.map((model) => (
+              <SelectItem
+                key={model.value}
+                value={model.value}
+                className="cursor-pointer rounded-xl"
+              >
+                {model.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <motion.div
         layout
         initial={{ opacity: 0 }}
