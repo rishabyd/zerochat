@@ -255,7 +255,7 @@ export async function POST(req: Request) {
           providerOptions: {
             gateway: getGatewayConfig(model),
           },
-          system: `You have option to craete user prefernces and memories plus also retrieve that memories so use memory tool when user query needs personalisation and give best response.`,
+          system: `You have option to craete user prefernces and memories plus also retrieve that memories so use memory tool when user query needs personalisation and give best response. always fetch user prefernces before answering user questions.`,
 
           model,
           tools:
