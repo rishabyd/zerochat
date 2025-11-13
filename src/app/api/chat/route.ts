@@ -5,7 +5,6 @@ import { auth } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getSession } from "@/lib/services/user-sessions";
 import { apiDebugger } from "@/lib/tools/api-testing";
-import { urlCrawler } from "@/lib/tools/live-crawler";
 import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
@@ -228,7 +227,9 @@ export async function POST(req: Request) {
         const messagesForRouter = messagesForAI.slice(-4);
 
         const modelResult =
-          model === "auto" ? await GetBestModel(messagesForRouter,chatMode) : null;
+          model === "auto"
+            ? await GetBestModel(messagesForRouter, chatMode)
+            : null;
         const autoModel = modelResult?.autoModel;
         const complexity = modelResult?.complexity;
         const finalModel = model === "auto" ? autoModel : model;
@@ -249,7 +250,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
               ? {
                   webSearch,
                   apiDebugger,
-                  urlCrawler,
+                  // urlCrawler,
                   ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
                     containerTags: [`user:${userId}`, "ai-chat-agent"],
                   }),
