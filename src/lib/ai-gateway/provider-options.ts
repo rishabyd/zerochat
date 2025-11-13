@@ -4,6 +4,10 @@ export const getGatewayConfig = (model: string) => {
       order: ["anthropic", "vertex", "bedrock"],
       only: ["anthropic", "vertex", "bedrock"],
     },
+    "anthropic/claude-haiku-4.5": {
+      order: ["anthropic", "vertex", "bedrock"],
+      only: ["anthropic", "vertex", "bedrock"],
+    },
     "openai/gpt-4o-mini": {
       order: ["openai", "azure"],
       only: ["openai", "azure"],
