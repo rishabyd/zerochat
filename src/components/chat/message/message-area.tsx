@@ -240,7 +240,11 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
               {/* Clean indicator - no reasoning text */}
               {shouldShowIndicator && index === lastUserMessageIndex && (
                 <div className="mx-auto max-w-[95vw] lg:max-w-[55vw] px-7">
-                  <div className="bg-background/25 gap-3 p-3 px-4 rounded-lg text-sm w-fit">
+                  <div
+                    className="bg-background/50 border-2 border-input gap-3 p-3 px-4 rounded-3xl shadow-lg
+
+                   shadow-background/30 text-sm w-fit"
+                  >
                     <div className="flex items-center gap-2">
                       <indicatorState.Icon className="size-5 animate-pulse flex-shrink-0" />
                       <Shimmer>{indicatorState.label}</Shimmer>
