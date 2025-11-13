@@ -6,7 +6,8 @@ import { MessageSquareIcon, RefreshCw, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useTransition } from "react";
+import { toast } from "sonner";
 import useSWR from "swr";
 import { Button } from "../ui/button";
 import {
@@ -27,54 +28,72 @@ type Session = {
   updatedAt: Date;
 };
 
+type SessionItem = {
+  id: string;
+  title: string;
+  href: string;
+  isActive: boolean;
+};
+
 export function NavSessions() {
   const { open } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
-  const [refreshLoader, setRefreshLoader] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
   const {
     data: sessions,
     error,
     isLoading,
     mutate,
-  } = useSWR<Session[]>("/api/sessions", fetcher);
+  } = useSWR<Session[]>("/api/sessions", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 5000,
+  });
 
-  // For refresh button (triggers re-fetch)
-  function refreshSessions() {
-    setRefreshLoader(true);
-    mutate();
-    setRefreshLoader(false);
-  }
-
-  async function deleteSession(id: string) {
-    try {
-      await DeleteSession({ sessionId: id });
-      mutate();
-      if (pathname && pathname !== "/" && pathname.includes(id)) {
-        router.push("/");
-      }
-    } catch (e) {
-      // Optionally: handle error, e.g. show toast
-    }
-  }
-
-  const items = useMemo(() => {
+  const items = useMemo<SessionItem[]>(() => {
     return (sessions ?? []).map((s) => ({
       id: s.id,
       title: s.title || "Untitled",
       href: `/${s.id}`,
-      isActive: pathname?.includes(s.id),
+      isActive: pathname?.includes(s.id) ?? false,
     }));
   }, [sessions, pathname]);
-  console.log("items from nav session-", items);
+
+  const handleRefresh = () => {
+    startTransition(() => {
+      mutate();
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await DeleteSession({ sessionId: id });
+
+      // Optimistic update
+      mutate((current) => current?.filter((s) => s.id !== id), {
+        revalidate: false,
+      });
+
+      // Redirect if deleting current session
+      if (pathname?.includes(id)) {
+        router.push("/");
+      }
+
+      toast.success("Session deleted");
+    } catch (error) {
+      toast.error("Failed to delete session");
+      mutate(); // Revalidate on error
+    }
+  };
 
   if (isLoading) {
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Sessions</SidebarGroupLabel>
-        <div className="space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-8 w-full" />
+        <div className="space-y-2 p-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-xl" />
           ))}
         </div>
       </SidebarGroup>
@@ -85,15 +104,18 @@ export function NavSessions() {
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Sessions</SidebarGroupLabel>
-        <div className="p-2 text-sm text-destructive">
-          <p>{error.message}</p>
+        <div className="p-4 space-y-2">
+          <p className="text-sm text-destructive">Failed to load sessions</p>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={refreshSessions}
-            className="mt-2"
+            onClick={handleRefresh}
+            disabled={isPending}
+            className="w-full"
           >
-            <RefreshCw className={`h-4 w-4`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isPending && "animate-spin"}`}
+            />
             Retry
           </Button>
         </div>
@@ -103,59 +125,71 @@ export function NavSessions() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="flex items-center h-12 justify-between">
+      <SidebarGroupLabel className="flex items-center justify-between h-12 px-2">
         <span>Sessions</span>
         <Button
           variant="ghost"
-          size="sm"
-          onClick={refreshSessions}
-          className="h-6 w-6 p-0 cursor-pointer hover:bg-accent"
+          size="icon"
+          onClick={handleRefresh}
+          disabled={isPending}
+          className="h-7 w-7"
         >
-          {
-            <RefreshCw
-              className={`${refreshLoader && "animate-spin"} h-3 w-3`}
-            />
-          }
+          <RefreshCw className={`h-3.5 w-3.5 ${isPending && "animate-spin"}`} />
+          <span className="sr-only">Refresh sessions</span>
         </Button>
       </SidebarGroupLabel>
 
       <SidebarMenu>
         <AnimatePresence mode="popLayout">
-          {items.length === 0 ? (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="p-2 text-sm text-muted-foreground"
-            >
-              {open ? "No sessions yet" : ""}
-            </motion.span>
-          ) : (
-            items.map((item) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={item.isActive}>
-                    <Link href={item.href}>
-                      <MessageSquareIcon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                  <SidebarMenuAction
-                    onClick={() => deleteSession(item.id)}
-                    className="h-4 w-4 cursor-pointer text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="hover:text-red-700 text-white duration-300 h-4 w-4" />
-                  </SidebarMenuAction>
-                </SidebarMenuItem>
-              </motion.div>
-            ))
-          )}
+          {items.length === 0
+            ? open && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="px-4 py-8 text-center"
+                >
+                  <p className="text-sm text-muted-foreground">
+                    No sessions yet
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Start a new chat to create one
+                  </p>
+                </motion.div>
+              )
+            : items.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20, height: 0 }}
+                  transition={{
+                    duration: 0.2,
+                    delay: index * 0.02,
+                  }}
+                >
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={item.isActive}
+                      className="rounded-2xl group"
+                    >
+                      <Link href={item.href}>
+                        <MessageSquareIcon className="h-4 w-4" />
+                        <span className="truncate">{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+
+                    <SidebarMenuAction
+                      onClick={() => handleDelete(item.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive transition-colors" />
+                      <span className="sr-only">Delete session</span>
+                    </SidebarMenuAction>
+                  </SidebarMenuItem>
+                </motion.div>
+              ))}
         </AnimatePresence>
       </SidebarMenu>
     </SidebarGroup>

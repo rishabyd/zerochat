@@ -52,9 +52,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarMenu className="lg:mt-5 mt-2">
-          <SidebarMenuItem className="flex justify-center items-center">
-            <SidebarMenuButton asChild>
+        <SidebarMenu className="lg:mt-5 mt-2 ">
+          <SidebarMenuItem className="flex justify-center  items-center">
+            <SidebarMenuButton asChild className="rounded-2xl p-2">
               <Link href="/">
                 <PlusIcon className="h-4 w-4" />
                 <span>New chat</span>
