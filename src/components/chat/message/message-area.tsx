@@ -12,6 +12,8 @@ import { useChatStore } from "@/lib/store/useChatStore";
 import { isToolUIPart } from "@/lib/utils/is-tool-part";
 import type { ToolUIPart, UIDataTypes, UIMessage, UITools } from "ai";
 import {
+  Archive,
+  ArchiveRestore,
   ArrowBigUp,
   Banknote,
   Brain,
@@ -114,7 +116,8 @@ const getIndicatorState = (
       const isPricingSearch = toolName.toLowerCase().includes("pricingcalc");
       const isLiveUrlCrawling = toolName.toLowerCase().includes("urlcrawler");
       const isApiDebugger = toolName.toLowerCase().includes("apidebugger");
-
+      const isFetchMemory = toolName.toLowerCase().includes("searchMemories");
+      const isSavingMemory = toolName.toLowerCase().includes("addMemory");
       let Icon = Wrench;
       let label = `Using ${toolName}...`;
 
@@ -124,6 +127,12 @@ const getIndicatorState = (
       } else if (isApiDebugger) {
         Icon = ArrowBigUp;
         label = "Hitting API's...";
+      } else if (isFetchMemory) {
+        Icon = Archive;
+        label = "Fetching user preferences...";
+      } else if (isSavingMemory) {
+        Icon = ArchiveRestore;
+        label = "Saving user preference...";
       } else if (isLiveUrlCrawling) {
         Icon = TextSelect;
         label = "Live crawling url...";

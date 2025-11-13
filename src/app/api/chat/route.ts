@@ -4,11 +4,14 @@ import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
 import { auth } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getSession } from "@/lib/services/user-sessions";
+import { apiDebugger } from "@/lib/tools/api-testing";
 import { urlCrawler } from "@/lib/tools/live-crawler";
 import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
+import { supermemoryTools } from "@supermemory/tools/ai-sdk";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
+
 import {
   convertToModelMessages,
   smoothStream,
@@ -227,7 +230,7 @@ export async function POST(req: Request) {
       }
 
       // Prepare full context for AI (limited to MAX_CHAT_MESSAGES for performance)
-      const messagesForAI = [...historyMessages, currentMessage].slice(-50);
+      const messagesForAI = [...historyMessages, currentMessage].slice(-20);
 
       // Enhanced streaming with partial response capture and comprehensive logging
       let partialResponse = "";
@@ -250,17 +253,22 @@ export async function POST(req: Request) {
           providerOptions: {
             gateway: getGatewayConfig(model),
           },
+          system: `You have option to craete user prefernces and memories plus also retrieve that memories so use memory tool when user query needs personalisation and give best response`,
+
           model,
           tools: {
             webSearch,
-            // apiDebugger,
+            apiDebugger,
             urlCrawler,
+            ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
+              projectId: userId,
+            }),
           },
           stopWhen: [stepCountIs(10)],
           toolChoice: "auto",
           messages: convertToModelMessages(messagesForAI),
           experimental_transform: smoothStream({
-            delayInMs: 20,
+            delayInMs: 35,
             chunking: "word",
           }),
           abortSignal: combinedSignal.signal,
