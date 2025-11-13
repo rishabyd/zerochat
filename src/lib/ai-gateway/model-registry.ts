@@ -8,9 +8,9 @@ import {
 import { z } from "zod";
 import { getGatewayConfig } from "./provider-options";
 
-export const HIGH_CHAT_MODELS: Record<number, string> = {
+export const AGENT_MODELS: Record<number, string> = {
   "1": "openai/gpt-oss-20b",
-  "2": "openai/gpt-5-nano",
+  "2": "google/gemini-2.5-flash-lite",
   "3": "xai/grok-4-fast-reasoning",
   "4": "zai/glm-4.6",
   "5": "openai/gpt-5-mini",
@@ -18,6 +18,18 @@ export const HIGH_CHAT_MODELS: Record<number, string> = {
   "7": "anthropic/claude-haiku-4.5",
   "8": "moonshotai/kimi-k2-thinking-turbo",
   "9": "moonshotai/kimi-k2-thinking-turbo",
+  "10": "anthropic/claude-sonnet-4.5",
+};
+export const SIMPLE_MODELS: Record<number, string> = {
+  "1": "meta/llama-3.1-8b",
+  "2": "google/gemini-2.5-flash-lite",
+  "3": "xai/grok-4-fast-reasoning",
+  "4": "zai/glm-4.6",
+  "5": "google/gemini-2.5-flash",
+  "6": "openai/gpt-5-mini",
+  "7": "anthropic/claude-haiku-4.5",
+  "8": "anthropic/claude-haiku-4.5",
+  "9": "anthropic/claude-haiku-4.5",
   "10": "anthropic/claude-sonnet-4.5",
 };
 
@@ -50,7 +62,8 @@ OUTPUT (JSON only, no other text):
 }`;
 
 export async function GetBestModel(
-  currentMessages: UIMessage<unknown, UIDataTypes, UITools>[]
+  currentMessages: UIMessage<unknown, UIDataTypes, UITools>[],
+  chatMode: "agent" | "simple"
 ) {
   try {
     const model = "google/gemini-2.0-flash-lite";
@@ -82,14 +95,16 @@ export async function GetBestModel(
 
     return {
       autoModel:
-        HIGH_CHAT_MODELS[complexityNum as keyof typeof HIGH_CHAT_MODELS],
+        chatMode === "agent"
+          ? AGENT_MODELS[complexityNum as keyof typeof AGENT_MODELS]
+          : SIMPLE_MODELS[complexityNum as keyof typeof SIMPLE_MODELS],
       complexity: complexityNum,
     };
   } catch (error) {
     console.warn(`JSON parsing failed:`, error);
     // Fallback to default values
     return {
-      autoModel: HIGH_CHAT_MODELS[3],
+      autoModel: chatMode === "agent" ? AGENT_MODELS[3] : SIMPLE_MODELS[3],
       complexity: 3,
     };
   }

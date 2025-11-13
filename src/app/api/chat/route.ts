@@ -228,7 +228,7 @@ export async function POST(req: Request) {
         const messagesForRouter = messagesForAI.slice(-4);
 
         const modelResult =
-          model === "auto" ? await GetBestModel(messagesForRouter) : null;
+          model === "auto" ? await GetBestModel(messagesForRouter,chatMode) : null;
         const autoModel = modelResult?.autoModel;
         const complexity = modelResult?.complexity;
         const finalModel = model === "auto" ? autoModel : model;
