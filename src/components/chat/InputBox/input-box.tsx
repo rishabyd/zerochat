@@ -33,7 +33,12 @@ const MODELS = [
   { value: "openai/gpt-5", label: "GPT-5", icon: Sparkles },
   {
     value: "anthropic/claude-haiku-4.5",
-    label: "anthropic/claude-sonnet-4.5",
+    label: "Claude Haiku 4.5",
+    icon: Sparkles,
+  },
+  {
+    value: "anthropic/claude-sonnet-4.5",
+    label: "Claude Sonnet 4.5",
     icon: Sparkles,
   },
 ] as const;
