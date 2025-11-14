@@ -12,6 +12,10 @@ export async function GET() {
 
     const profile = await getCustomPrompt({ userId });
 
+    if (!profile) {
+      return NextResponse.json("");
+    }
+
     return NextResponse.json(profile);
   } catch (error) {
     const { status, body } = toErrorResponse(error);

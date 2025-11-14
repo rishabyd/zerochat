@@ -1,8 +1,9 @@
 import { saveMessage } from "@/lib/actions/chat-actions";
 import { GetBestModel } from "@/lib/ai-gateway/model-registry";
 import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
-import { auth } from "@/lib/auth";
+import { getServerUserId } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
+import { getCustomPrompt } from "@/lib/services/user-profile";
 import { getSession } from "@/lib/services/user-sessions";
 import { apiDebugger } from "@/lib/tools/api-testing";
 import { webSearch } from "@/lib/tools/web-search-tool";
@@ -18,6 +19,7 @@ import {
   stepCountIs,
   streamText,
 } from "ai";
+import { NextResponse } from "next/server";
 
 const createAssistantMessage = (
   content: string
@@ -140,28 +142,23 @@ export async function POST(req: Request) {
   console.log(`🚀 Chat POST request started at ${new Date().toISOString()}`);
 
   try {
-    const session = await auth.api.getSession({ headers: req.headers });
-    const userId = session?.user.id;
-    if (!userId)
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-
-    // ✅ Create timeout controller
+    const userId = await getServerUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const timeoutController = new AbortController();
     const timeoutId = setTimeout(() => {
       timeoutController.abort();
     }, 180000); // 3 minutes
 
-    // ✅ Combine signals using AbortSignal.any()
     const signals = [timeoutController.signal];
     if (req.signal) signals.push(req.signal);
     const combinedSignal = AbortSignal.any(signals);
 
-    // Cleanup function to release resources
     const cleanup = () => {
       clearTimeout(timeoutId);
     };
 
-    // ✅ Check if already aborted
     if (combinedSignal.aborted) {
       cleanup();
       return Response.json(
@@ -197,10 +194,14 @@ export async function POST(req: Request) {
       }
 
       // Load conversation history
-      const dbMessages = (await getSession(userId, sessionId))?.messages || [];
+      const [session, customData] = await Promise.all([
+        getSession(userId, sessionId),
+        getCustomPrompt({ userId }),
+      ]);
+      const dbMessages = session?.messages;
 
       const historyMessages: UIMessage<unknown, UIDataTypes, UITools>[] =
-        dbMessages.map((msg) => ({
+        dbMessages!.map((msg) => ({
           id: msg.id,
           role: msg.role === "USER" ? "user" : "assistant",
           parts: [{ type: "text", text: msg.content }],
@@ -238,7 +239,10 @@ export async function POST(req: Request) {
           providerOptions: {
             gateway: getGatewayConfig(finalModel!),
           },
-          system: `You are an intelligent assistant with long-term memory. Use your memory tools to:
+          system: `
+          These are user custom instructions-${customData}.
+          
+          You are an intelligent assistant with long-term memory. Use your memory tools to:
 - Search for relevant user preferences and context before answering
 - Automatically save important information users share
 - Provide personalized recommendations based on past conversations

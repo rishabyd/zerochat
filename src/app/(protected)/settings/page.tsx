@@ -9,24 +9,62 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { SaveCustomInstructions } from "@/lib/actions/user-actions";
 import { useSession } from "@/lib/auth-client";
 import { Palette, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const session = useSession();
+  const [customInstructions, setCustomInstructions] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
   if (!session.data?.user.id) {
     redirect("/sign-in");
+  }
+
+  // Fetch custom instructions from DB on mount
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const response = await fetch("/api/user/personalise");
+        console.log(response);
+
+        if (response.ok) {
+          const data = await response.json();
+          setCustomInstructions(data || "");
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchSettings();
+  }, []);
+
+  // Handle form submission with server action
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      await SaveCustomInstructions({ text: customInstructions });
+      toast.success("Instructions saved successfully");
+      // Optional: Show success toast/notification
+    } catch (error) {
+      console.error("Failed to update settings:", error);
+      // Optional: Show error toast/notification
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -74,50 +112,41 @@ export default function SettingsPage() {
 
           {/* Personalization Tab */}
           <TabsContent value="personalization" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Custom Instructions</CardTitle>
-                <CardDescription>
-                  Tell the AI how you like it to respond
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="customInstructions">
-                    What would you like the AI to know about you?
-                  </Label>
-                  <Textarea
-                    id="customInstructions"
-                    placeholder="e.g., I'm a software developer working with React and TypeScript..."
-                    className="min-h-[120px] resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This helps the AI provide more relevant responses
-                  </p>
-                </div>
+            <form onSubmit={handleSubmit}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Custom Instructions</CardTitle>
+                  <CardDescription>
+                    Tell the AI how you like it to respond
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customInstructions">
+                      What would you like the AI to know about you?
+                    </Label>
+                    <Textarea
+                      id="customInstructions"
+                      name="customInstructions"
+                      placeholder="e.g., I'm a software developer working with React and TypeScript..."
+                      className="min-h-[120px] resize-none"
+                      value={customInstructions}
+                      onChange={(e) => setCustomInstructions(e.target.value)}
+                      disabled={isLoading}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This helps the AI provide more relevant responses
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
 
-                <Separator />
-
-                <div className="space-y-2">
-                  <Label htmlFor="tone">Response Tone</Label>
-                  <Select defaultValue="neutral">
-                    <SelectTrigger id="tone">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="professional">Professional</SelectItem>
-                      <SelectItem value="neutral">Neutral</SelectItem>
-                      <SelectItem value="friendly">Friendly</SelectItem>
-                      <SelectItem value="casual">Casual</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="flex justify-end">
-              <Button>Save Changes</Button>
-            </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isLoading || isSaving}>
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
           </TabsContent>
         </Tabs>
       </div>

@@ -26,7 +26,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-          <Toaster richColors />
+          <Toaster
+            richColors
+            toastOptions={{
+              className: "rounded-none",
+              style: { borderRadius: 0 },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

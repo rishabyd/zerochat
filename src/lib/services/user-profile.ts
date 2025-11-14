@@ -55,9 +55,10 @@ export async function saveCustomPrompt({
   userId: string;
   text: string;
 }) {
-  const data = await prisma.userSettings.update({
+  const data = await prisma.userSettings.upsert({
     where: { userId },
-    data: { instructions: text },
+    update: { instructions: text },
+    create: { userId, instructions: text },
   });
 
   return data.instructions ?? "";

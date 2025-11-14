@@ -55,7 +55,7 @@ export function NavSessions() {
     return (sessions ?? []).map((s) => ({
       id: s.id,
       title: s.title || "Untitled",
-      href: `/${s.id}`,
+      href: `c/${s.id}`,
       isActive: pathname?.includes(s.id) ?? false,
     }));
   }, [sessions, pathname]);

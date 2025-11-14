@@ -137,7 +137,7 @@ function MainInputBox({
 
           setPrompt(sanitizedPrompt);
           setCurrentSessionId(clientSessionId);
-          router.replace(`/${clientSessionId}`);
+          router.replace(`c/${clientSessionId}`);
 
           // Send message immediately after navigation with model and chatMode
           if (sendMessage) {

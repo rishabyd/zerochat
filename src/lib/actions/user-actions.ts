@@ -3,18 +3,20 @@
 import { getServerUserId } from "../auth";
 import { saveCustomPrompt } from "../services/user-profile";
 
-export async function SaveCutsomInstructions({ text }: { text: string }) {
-  if (!text) {
-    return { message: "Text field is empty!", success: false };
+export async function SaveCustomInstructions({ text }: { text: string }) {
+  if (!text || text.trim() === "") {
+    throw new Error("Text field is empty!");
   }
+
   const id = await getServerUserId();
   if (!id) {
-    return { message: "Unauthorized request!", success: false };
+    throw new Error("Unauthorized request!");
   }
+
   try {
-    await saveCustomPrompt({ userId: id, text });
-    return { message: "successfully saved", success: true };
+    await saveCustomPrompt({ userId: id, text: text.trim() });
   } catch (error) {
-    return { message: "Error on our side! try again later", success: false };
+    console.error("Failed to save custom instructions:", error);
+    throw new Error("Error on our side! Try again later");
   }
 }
