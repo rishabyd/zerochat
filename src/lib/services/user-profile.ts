@@ -20,6 +20,7 @@ export async function getCurrentUserProfile(
       email: true,
       name: true,
       image: true,
+      settings: { select: { instructions: true } },
     },
   });
   if (!db) {
@@ -38,4 +39,26 @@ export async function getCurrentUserProfile(
   console.log(`data query for userprofile`);
 
   return unified;
+}
+
+export async function getCustomPrompt({ userId }: { userId: string }) {
+  const data = await prisma.userSettings.findUnique({
+    where: { userId },
+    select: { instructions: true },
+  });
+  return data?.instructions;
+}
+export async function saveCustomPrompt({
+  userId,
+  text,
+}: {
+  userId: string;
+  text: string;
+}) {
+  const data = await prisma.userSettings.update({
+    where: { userId },
+    data: { instructions: text },
+  });
+
+  return data.instructions ?? "";
 }
