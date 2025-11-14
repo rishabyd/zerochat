@@ -21,6 +21,7 @@ import { UnifiedProfile } from "@/lib/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NavUserSkeleton } from "./nav-user-skeleton";
+import { authClient } from "@/lib/auth-client";
 
 export function NavUser({
   profile,
