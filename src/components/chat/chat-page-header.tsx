@@ -7,7 +7,7 @@ export default function ChatPageHeader() {
     <div className="flex-shrink-0 bg-sidebar border-b border-border md:hidden">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
-          <SidebarTrigger className="p-2 hover:bg-accent rounded-lg transition-colors" />
+          <SidebarTrigger className="p-2 hover:bg-accent rounded-none transition-colors" />
         </div>
       </div>
     </div>

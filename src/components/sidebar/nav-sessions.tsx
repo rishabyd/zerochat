@@ -93,7 +93,7 @@ export function NavSessions() {
         <SidebarGroupLabel>Sessions</SidebarGroupLabel>
         <div className="space-y-2 p-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full rounded-xl" />
+            <Skeleton key={i} className="h-10 w-full rounded-none" />
           ))}
         </div>
       </SidebarGroup>
@@ -172,7 +172,7 @@ export function NavSessions() {
                     <SidebarMenuButton
                       asChild
                       isActive={item.isActive}
-                      className="rounded-2xl group"
+                      className="rounded-none group"
                     >
                       <Link href={item.href}>
                         <MessageSquareIcon className="h-4 w-4" />

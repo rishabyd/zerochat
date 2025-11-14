@@ -13,7 +13,7 @@ export function NavUserSkeleton() {
           size="lg"
           className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
-          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="h-8 w-8 rounded-none" />
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>

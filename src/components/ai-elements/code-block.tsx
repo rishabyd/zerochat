@@ -37,7 +37,10 @@ export const CodeBlock = ({
   <CodeBlockContext.Provider value={{ code }}>
     <div
       data-code-block-container="true"
-      className={cn("my-4 w-full overflow-hidden rounded-xl border", className)}
+      className={cn(
+        "my-4 w-full overflow-hidden rounded-none border",
+        className
+      )}
       {...props}
     >
       <div className="relative">
@@ -138,7 +141,7 @@ export const CodeBlockCopyButton = ({
 
   return (
     <Button
-      className={cn("shrink-0 h-7 w-7 rounded-md", className)}
+      className={cn("shrink-0 h-7 w-7 rounded-none", className)}
       onClick={copyToClipboard}
       size="icon"
       variant="ghost"

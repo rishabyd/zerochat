@@ -73,7 +73,7 @@ export default function MessageBubble({ msg }: MessageBubbleProps) {
                     onClick={() => setIsExpanded(!isExpanded)}
                     variant="secondary"
                     size="sm"
-                    className="cursor-pointer mt-2 mx-auto text-xs rounded-full border transition-colors"
+                    className="cursor-pointer mt-2 mx-auto text-xs rounded-none border transition-colors"
                   >
                     {isExpanded ? "Show less" : "Show more"}
                   </Button>

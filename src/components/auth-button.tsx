@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signIn, signOut } from "@/lib/auth-client";
+import { signIn, signOut, useSession } from "@/lib/auth-client";
 import { Button } from "./ui/button";
 
 // Authentication button component that shows different states based on user login status
@@ -12,11 +12,7 @@ export function AuthButton() {
     <>
       {isSignedIn ? (
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => signOut()}
-          >
+          <Button size="sm" variant="outline" onClick={() => signOut()}>
             Sign out
           </Button>
         </div>

@@ -241,7 +241,7 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
               {shouldShowIndicator && index === lastUserMessageIndex && (
                 <div className="mx-auto max-w-[95vw] lg:max-w-[55vw] px-7">
                   <div
-                    className="bg-background/50 border-2 border-input gap-3 p-3 px-4 rounded-3xl shadow-sm
+                    className="bg-background/50 border-2 border-input gap-3 p-3 px-4 rounded-none shadow-sm
 
 
                    shadow-background/50 text-sm w-fit"
