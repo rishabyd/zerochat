@@ -5,7 +5,7 @@ import { getServerUserId } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getCustomPrompt } from "@/lib/services/user-profile";
 import { getSession } from "@/lib/services/user-sessions";
-import { apiDebugger } from "@/lib/tools/api-testing";
+import { urlCrawler } from "@/lib/tools/live-crawler";
 import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
@@ -240,7 +240,9 @@ export async function POST(req: Request) {
             gateway: getGatewayConfig(finalModel!),
           },
           system: `
-          These are user custom instructions-${customData}.
+          These are user custom instructions-${customData}. 
+          
+          note:use webSearch tool for one time then crawl that useful urls together instead of using webSearch tool again and again to crawl pages.
           
           You are an intelligent assistant with long-term memory. Use your memory tools to:
 - Search for relevant user preferences and context before answering
@@ -253,8 +255,8 @@ Be natural—don't announce when you're using memory.fetch memories in every use
             body.chatMode === "agent"
               ? {
                   webSearch,
-                  apiDebugger,
-                  // urlCrawler,
+                  // apiDebugger,
+                  urlCrawler,
                   ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
                     containerTags: [`user:${userId}`, "ai-chat-agent"],
                   }),
@@ -264,7 +266,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
           toolChoice: body.chatMode === "agent" ? "auto" : undefined,
           messages: convertToModelMessages(messagesForAI),
           experimental_transform: smoothStream({
-            delayInMs: 35,
+            delayInMs: 20,
             chunking: "word",
           }),
           abortSignal: combinedSignal,

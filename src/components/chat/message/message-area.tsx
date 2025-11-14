@@ -19,7 +19,7 @@ import {
   Brain,
   Globe,
   LoaderPinwheel,
-  TextSelect,
+  Search,
   Wrench,
 } from "lucide-react";
 import { useMemo } from "react";
@@ -135,8 +135,8 @@ const getIndicatorState = (
         Icon = ArchiveRestore;
         label = "Saving user preference...";
       } else if (isLiveUrlCrawling) {
-        Icon = TextSelect;
-        label = "Live crawling url...";
+        Icon = Search;
+        label = "Fetching page contents...";
       } else if (isPricingSearch) {
         Icon = Banknote;
         label = "Fetching latest pricing...";
