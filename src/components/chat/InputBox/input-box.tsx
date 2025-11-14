@@ -30,7 +30,7 @@ import SendButton from "./send-button";
 
 const MODELS = [
   { value: "auto", label: "Auto", icon: Sparkles },
-  { value: "openai/gpt-5", label: "GPT-5", icon: Sparkles },
+  { value: "openai/gpt-5.1-thinking", label: "GPT 5.1", icon: Sparkles },
   {
     value: "anthropic/claude-haiku-4.5",
     label: "Claude Haiku 4.5",
