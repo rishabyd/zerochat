@@ -56,19 +56,34 @@ function ChatPage({
   });
 
   const displayMessages = useMemo(() => {
+    // If no seed messages, just use streaming messages
     if (!seedMessages?.length) return messages;
 
-    const allMessages = [...seedMessages, ...messages];
-    const seenIds = new Set(); // Track IDs we've already seen
+    // If no streaming messages yet, use seed messages
+    if (!messages.length) return seedMessages;
 
-    return allMessages.filter((message) => {
-      // Skip if we've seen this ID before
-      if (seenIds.has(message.id)) return false;
+    // Create a Map to track unique messages by ID (Map preserves insertion order)
+    const messageMap = new Map<
+      string,
+      UIMessage<unknown, UIDataTypes, UITools>
+    >();
 
-      // Remember this ID and keep the message
-      seenIds.add(message.id);
-      return true;
+    // First, add all seed messages
+    seedMessages.forEach((msg) => {
+      if (msg.id) {
+        messageMap.set(msg.id, msg);
+      }
     });
+
+    // Then add/update with streaming messages (these take precedence for same ID)
+    messages.forEach((msg) => {
+      if (msg.id) {
+        messageMap.set(msg.id, msg);
+      }
+    });
+
+    // Convert back to array, maintaining order
+    return Array.from(messageMap.values());
   }, [seedMessages, messages]);
 
   const createUserMessage = useCallback(
@@ -77,13 +92,13 @@ function ChatPage({
       role: "user" as const,
       parts: [{ type: "text", text }],
     }),
-    []
+    [],
   );
 
   const sendWithSession = useCallback(
     (
       message: { text: string },
-      options?: { body?: Record<string, unknown> }
+      options?: { body?: Record<string, unknown> },
     ) => {
       return sendMessage(message, {
         body: {
@@ -95,7 +110,7 @@ function ChatPage({
         },
       });
     },
-    [sendMessage, sessionId, createUserMessage, globalChatMode, globalModel]
+    [sendMessage, sessionId, createUserMessage, globalChatMode, globalModel],
   );
 
   const memoizedStop = useCallback(() => stop(), [stop]);

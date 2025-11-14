@@ -69,7 +69,7 @@ const isActiveReasoning = (part: ReasoningPart): boolean => {
 
   // Active if state indicates streaming/in-progress
   const hasActiveState = REASONING_ACTIVE_STATES.some(
-    (state) => partState.includes(state) || reasoningState.includes(state)
+    (state) => partState.includes(state) || reasoningState.includes(state),
   );
 
   if (hasActiveState) return true;
@@ -91,7 +91,7 @@ type StatusIndicatorState = {
 };
 
 const getIndicatorState = (
-  messages: ChatMessageType[]
+  messages: ChatMessageType[],
 ): StatusIndicatorState => {
   const lastMsg = messages[messages.length - 1];
   if (!lastMsg || lastMsg.role !== "assistant") {
@@ -193,7 +193,7 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
   const shouldShowIndicator = thinking && !hasStreamingText;
 
   function isUserOrAssistant(
-    msg: ChatMessageType
+    msg: ChatMessageType,
   ): msg is ChatMessageType & { role: "user" | "assistant" } {
     return msg.role === "user" || msg.role === "assistant";
   }
@@ -204,13 +204,23 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
     (lastIndex, msg, index) => {
       return msg.role === "user" ? index : lastIndex;
     },
-    -1
+    -1,
   );
 
   return (
     <Conversation className="w-full h-full flex-1 relative">
       <ConversationContent className="flex flex-col pt-9 lg:pt-0 w-full">
         {filteredMessages.map((msg, index) => {
+          const consolidatedText = msg.parts
+            .filter((part) => part.type === "text")
+            .map((part) => {
+              if (part.type === "text") {
+                return String((part as { text?: string }).text ?? "");
+              }
+              return "";
+            })
+            .join("\n");
+
           return (
             <div key={`${msg.id ?? "msg"}-${index}`} className="relative">
               {msg.role === "user" ? (
@@ -219,19 +229,14 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
                 <div className="w-full max-w-[95vw] lg:max-w-[55vw] box-border mx-auto">
                   <Message from={msg.role}>
                     <MessageContent>
-                      {msg.parts.map((part, partIndex) => {
-                        if (part.type === "text") {
-                          const text = (part as { text?: string }).text;
-                          return (
-                            text && (
-                              <Response key={`text-${partIndex}`}>
-                                {text}
-                              </Response>
-                            )
-                          );
-                        }
-                        return null;
-                      })}
+                      {consolidatedText.trim() && (
+                        <Response
+                          shikiTheme={["one-light", "ayu-dark"]}
+                          key={`${msg.id}-response`}
+                        >
+                          {consolidatedText}
+                        </Response>
+                      )}
                     </MessageContent>
                   </Message>
                 </div>
