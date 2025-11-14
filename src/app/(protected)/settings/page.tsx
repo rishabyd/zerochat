@@ -12,21 +12,14 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { SaveCustomInstructions } from "@/lib/actions/user-actions";
-import { useSession } from "@/lib/auth-client";
 import { Palette, Sparkles } from "lucide-react";
-import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const session = useSession();
   const [customInstructions, setCustomInstructions] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  if (!session.data?.user.id) {
-    redirect("/sign-in");
-  }
 
   // Fetch custom instructions from DB on mount
   useEffect(() => {

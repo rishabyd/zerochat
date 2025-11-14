@@ -4,20 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 export async function middleware(request: NextRequest) {
   const sessionCookie = getSessionCookie(request);
   const { pathname } = request.nextUrl;
-
   const isPublicRoute = pathname.startsWith("/sign-in");
 
-  if (isPublicRoute) {
-    // If already authenticated and visiting auth pages, send to app root
-    if (sessionCookie) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-    return NextResponse.next();
-  }
-  if (!sessionCookie) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+  if (isPublicRoute && sessionCookie) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
+  if (!isPublicRoute && !sessionCookie) {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
+  }
   return NextResponse.next();
 }
 

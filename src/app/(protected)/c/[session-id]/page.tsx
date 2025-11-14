@@ -2,7 +2,6 @@ import SessionWrapper from "@/components/chat/session-wrapper";
 import { getServerUserId } from "@/lib/auth";
 import { getSession } from "@/lib/services/user-sessions";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
-import { redirect } from "next/navigation";
 
 export default async function ChatSessionPage({
   params,
@@ -14,9 +13,6 @@ export default async function ChatSessionPage({
   try {
     const userId = await getServerUserId();
     const session = await getSession(userId!, sessionId);
-    if (!userId) {
-      redirect("/sign-in");
-    }
     // Convert database messages to UI message format for initial render
     const seedMessages: UIMessage<unknown, UIDataTypes, UITools>[] = (
       session?.messages || []

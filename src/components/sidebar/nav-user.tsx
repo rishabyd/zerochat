@@ -17,7 +17,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
 import { UnifiedProfile } from "@/lib/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
