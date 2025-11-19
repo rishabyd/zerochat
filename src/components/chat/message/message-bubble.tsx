@@ -62,7 +62,7 @@ export default function MessageBubble({ msg }: MessageBubbleProps) {
               <p
                 className={cn(
                   "whitespace-pre-wrap leading-5",
-                  !isExpanded && isLongMessage && "line-clamp-3"
+                  !isExpanded && isLongMessage && "line-clamp-3",
                 )}
               >
                 {text}

@@ -41,6 +41,11 @@ const MODELS = [
     label: "Claude Sonnet 4.5",
     icon: Sparkles,
   },
+  {
+    value: "google/gemini-3-pro-preview",
+    label: "Gemini 3 Pro",
+    icon: Sparkles,
+  },
 ] as const;
 
 type ModelValue = (typeof MODELS)[number]["value"];
@@ -54,7 +59,7 @@ function MainInputBox({
 }: {
   sendMessage?: (
     message: { text: string },
-    options?: { body?: Record<string, unknown> }
+    options?: { body?: Record<string, unknown> },
   ) => void;
   status?: string;
   stopResponse?: () => void;
@@ -81,7 +86,7 @@ function MainInputBox({
 
   // Model selection state - synced with global store
   const [selectedModel, setSelectedModel] = useState<ModelValue>(
-    (globalModel as ModelValue) || "auto"
+    (globalModel as ModelValue) || "auto",
   );
 
   const profile = useUserProfileStore((s) => s.profile);
@@ -168,7 +173,7 @@ function MainInputBox({
               chatMode: globalChatMode,
               model: globalModel, // Always has value, defaults to "auto"
             },
-          }
+          },
         );
         setPrompt("");
       }
@@ -185,7 +190,7 @@ function MainInputBox({
       sendMessage,
       globalChatMode,
       globalModel,
-    ]
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -195,7 +200,7 @@ function MainInputBox({
         if (!disabled) handleSubmit(e);
       }
     },
-    [disabled, handleSubmit]
+    [disabled, handleSubmit],
   );
 
   const handleStop = useCallback(() => {
@@ -244,7 +249,7 @@ function MainInputBox({
           pressed={agentMode}
           onPressedChange={setAgentMode}
           disabled={disabled}
-          className="data-[state=on]:bg-input/30 data-[state=on]:hover:bg-input/50 
+          className="data-[state=on]:bg-input/30 data-[state=on]:hover:bg-input/50
                      data-[state=off]:bg-input/30 data-[state=off]:hover:bg-input/50  border-2
                      transition-all duration-200 cursor-pointer "
         >
