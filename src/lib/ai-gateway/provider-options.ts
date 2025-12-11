@@ -8,6 +8,18 @@ export const getGatewayConfig = (model: string) => {
       order: ["cerebras", "deepinfra"],
       only: ["cerebras", "deepinfra"],
     },
+    "amazon/nova-lite": {
+      order: ["bedrock"],
+      only: ["bedrock"],
+    },
+    "deepseek/deepseek-v3.2": {
+      order: ["deepinfra"],
+      only: ["deepinfra"],
+    },
+    "meta/llama-4-scout": {
+      order: ["deepinfra", "bedrock"],
+      only: ["deepinfra", "bedrock"],
+    },
     "anthropic/claude-haiku-4.5": {
       order: ["anthropic", "bedrock"],
       only: ["anthropic", "bedrock"],

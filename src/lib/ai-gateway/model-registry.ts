@@ -66,11 +66,10 @@ export async function GetBestModel(
   chatMode: "agent" | "simple",
 ) {
   try {
-    const model = "meta/llama-3.1-8b";
+    const model = "amazon/nova-lite";
     const { object } = await generateObject({
       system,
       model,
-      maxOutputTokens: 20,
       temperature: 0,
       providerOptions: {
         gateway: getGatewayConfig(model),
