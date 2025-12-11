@@ -41,18 +41,20 @@ function ChatPage({
 
   const Transport = useMemo(() => transport, []);
 
+  const cleanup = () => {
+    setStopResponse(false);
+    setThinking(false);
+  };
+
   const { sendMessage, status, messages, error, stop } = useChat({
     transport: Transport,
     id: sessionId,
+    experimental_throttle: 100,
     onError: (e: Error) => {
       handleClientError(e);
-      setStopResponse(false);
-      setThinking(false);
+      cleanup();
     },
-    onFinish: () => {
-      setStopResponse(false);
-      setThinking(false);
-    },
+    onFinish: cleanup,
   });
 
   const displayMessages = useMemo(() => {
