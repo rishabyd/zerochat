@@ -10,23 +10,23 @@ import { getGatewayConfig } from "./provider-options";
 
 export const AGENT_MODELS: Record<number, string> = {
   "1": "openai/gpt-oss-20b",
-  "2": "google/gemini-2.5-flash-lite",
-  "3": "xai/grok-4-fast-reasoning",
-  "4": "zai/glm-4.6",
-  "5": "openai/gpt-5-mini",
+  "2": "openai/gpt-oss-120b",
+  "3": "openai/gpt-oss-120b",
+  "4": "anthropic/claude-3-haiku",
+  "5": "anthropic/claude-3-haiku",
   "6": "anthropic/claude-haiku-4.5",
   "7": "anthropic/claude-haiku-4.5",
-  "8": "moonshotai/kimi-k2-thinking-turbo",
-  "9": "moonshotai/kimi-k2-thinking-turbo",
+  "8": "anthropic/claude-haiku-4.5",
+  "9": "anthropic/claude-haiku-4.5",
   "10": "anthropic/claude-sonnet-4.5",
 };
 export const SIMPLE_MODELS: Record<number, string> = {
   "1": "meta/llama-3.1-8b",
-  "2": "google/gemini-2.5-flash-lite",
-  "3": "xai/grok-4-fast-reasoning",
-  "4": "zai/glm-4.6",
-  "5": "google/gemini-2.5-flash",
-  "6": "openai/gpt-5-mini",
+  "2": "openai/gpt-oss-20b",
+  "3": "openai/gpt-oss-120b",
+  "4": "anthropic/claude-3-haiku",
+  "5": "anthropic/claude-3-haiku",
+  "6": "zai/glm-4.6",
   "7": "anthropic/claude-haiku-4.5",
   "8": "anthropic/claude-haiku-4.5",
   "9": "anthropic/claude-haiku-4.5",
@@ -63,10 +63,10 @@ OUTPUT (JSON only, no other text):
 
 export async function GetBestModel(
   currentMessages: UIMessage<unknown, UIDataTypes, UITools>[],
-  chatMode: "agent" | "simple"
+  chatMode: "agent" | "simple",
 ) {
   try {
-    const model = "google/gemini-2.0-flash-lite";
+    const model = "meta/llama-3.1-8b";
     const { object } = await generateObject({
       system,
       model,

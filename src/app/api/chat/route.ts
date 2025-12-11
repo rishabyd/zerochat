@@ -9,7 +9,6 @@ import { urlCrawler } from "@/lib/tools/live-crawler";
 import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
-import { supermemoryTools } from "@supermemory/tools/ai-sdk";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
 
 import {
@@ -22,7 +21,7 @@ import {
 import { NextResponse } from "next/server";
 
 const createAssistantMessage = (
-  content: string
+  content: string,
 ): UIMessage<unknown, UIDataTypes, UITools> => ({
   id: generateMessageId(),
   role: "assistant",
@@ -55,7 +54,7 @@ const logPartialResponse = async (
   userMessage: UIMessage<unknown, UIDataTypes, UITools>,
   partialResponse: string,
   model?: string,
-  complexity?: number
+  complexity?: number,
 ) => {
   try {
     if (!partialResponse || typeof partialResponse !== "string") {
@@ -79,7 +78,7 @@ const logPartialResponse = async (
 
     if (partialContent && userContent) {
       console.log(
-        `💾 Saving both USER and AI messages (AI: ${partialContent.length} chars, USER: ${userContent.length} chars)`
+        `💾 Saving both USER and AI messages (AI: ${partialContent.length} chars, USER: ${userContent.length} chars)`,
       );
 
       // Use default values if model or complexity are undefined
@@ -115,7 +114,7 @@ const logPartialResponse = async (
 };
 
 const handleStreamingError = (
-  error: StreamingError
+  error: StreamingError,
 ): { status: number; message: string } => {
   console.error("AI streaming failed:", error);
 
@@ -163,7 +162,7 @@ export async function POST(req: Request) {
       cleanup();
       return Response.json(
         { error: "Request cancelled by client" },
-        { status: 499 }
+        { status: 499 },
       );
     }
 
@@ -181,7 +180,7 @@ export async function POST(req: Request) {
         cleanup();
         return Response.json(
           { error: "Session ID is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -189,7 +188,7 @@ export async function POST(req: Request) {
         cleanup();
         return Response.json(
           { error: "Current message is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -209,14 +208,14 @@ export async function POST(req: Request) {
         }));
 
       console.log(
-        `Session ${sessionId}: Loaded ${historyMessages.length} messages from database`
+        `Session ${sessionId}: Loaded ${historyMessages.length} messages from database`,
       );
 
       if (!currentMessage || currentMessage.role !== "user") {
         cleanup();
         return Response.json(
           { error: "Invalid user message" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -240,16 +239,11 @@ export async function POST(req: Request) {
             gateway: getGatewayConfig(finalModel!),
           },
           system: `
-          These are user custom instructions-${customData}. 
-          
-          note:use webSearch tool for one time then crawl that useful urls together instead of using webSearch tool again and again to crawl pages.
-          
-          You are an intelligent assistant with long-term memory. Use your memory tools to:
-- Search for relevant user preferences and context before answering
-- Automatically save important information users share
-- Provide personalized recommendations based on past conversations
+          These are user custom instructions-${customData}.
 
-Be natural—don't announce when you're using memory.fetch memories in every user convo. `,
+          note:use webSearch tool for one time then crawl that useful urls together instead of using webSearch tool again and again to crawl pages.
+
+          `,
           model: finalModel!,
           tools:
             body.chatMode === "agent"
@@ -257,9 +251,6 @@ Be natural—don't announce when you're using memory.fetch memories in every use
                   webSearch,
                   // apiDebugger,
                   urlCrawler,
-                  ...supermemoryTools(process.env.SUPERMEMORY_API_KEY!, {
-                    containerTags: [`user:${userId}`, "ai-chat-agent"],
-                  }),
                 }
               : undefined,
           stopWhen: body.chatMode === "agent" ? [stepCountIs(10)] : undefined,
@@ -279,7 +270,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
                 currentMessage,
                 partialResponse,
                 finalModel,
-                complexity
+                complexity,
               );
             }
           },
@@ -314,7 +305,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
                   }
                 ).responseMessages?.find(
                   (m: UIMessage<unknown, UIDataTypes, UITools>) =>
-                    m?.role === "assistant"
+                    m?.role === "assistant",
                 );
                 assistantContent = resp ? extractText(resp) : undefined;
               }
@@ -335,7 +326,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
 
               console.log(
                 "Provider metadata-",
-                JSON.stringify(await result.providerMetadata, null, 2)
+                JSON.stringify(await result.providerMetadata, null, 2),
               );
 
               if (userContent && assistantContent) {
@@ -369,7 +360,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
                 currentMessage,
                 partialResponse,
                 finalModel,
-                complexity
+                complexity,
               );
             }
           },
@@ -388,7 +379,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
                 currentMessage,
                 partialResponse,
                 finalModel,
-                complexity
+                complexity,
               );
             }
             cleanup();
@@ -403,7 +394,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
               currentMessage,
               partialResponse,
               finalModel,
-              complexity
+              complexity,
             );
           }
           cleanup();
@@ -423,7 +414,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
         cleanup();
 
         const { status, message } = handleStreamingError(
-          error as StreamingError
+          error as StreamingError,
         );
 
         return Response.json({ error: message }, { status });
@@ -443,7 +434,7 @@ Be natural—don't announce when you're using memory.fetch memories in every use
         {
           error: "Chat is currently under maintenance. Please try again later.",
         },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
