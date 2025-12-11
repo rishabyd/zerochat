@@ -249,7 +249,6 @@ export async function POST(req: Request) {
             body.chatMode === "agent"
               ? {
                   webSearch,
-                  // apiDebugger,
                   urlCrawler,
                 }
               : undefined,

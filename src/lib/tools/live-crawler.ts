@@ -29,7 +29,7 @@ export const urlCrawler = tool({
   execute: async ({ urls, subpages = 5, include_links = true }) => {
     try {
       console.log(
-        `🕷️ Crawling ${urls.length} URLs with up to ${subpages} subpages each`
+        `🕷️ Crawling ${urls.length} URLs with up to ${subpages} subpages each`,
       );
 
       const result = await exa.getContents(urls, {
@@ -46,7 +46,7 @@ export const urlCrawler = tool({
 
       const urlResults = urls.map((url) => {
         const urlPages = result.results.filter(
-          (r) => r.url === url || r.url?.startsWith(url)
+          (r) => r.url === url || r.url?.startsWith(url),
         );
 
         const pages = urlPages.map((content) => ({
@@ -74,7 +74,7 @@ export const urlCrawler = tool({
       });
 
       console.log(
-        `✅ Crawled ${result.results.length} total pages from ${urls.length} URLs`
+        `✅ Crawled ${result.results.length} total pages from ${urls.length} URLs`,
       );
 
       return {
