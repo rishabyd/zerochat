@@ -7,8 +7,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Chat App",
-  description: "AI Chat Application with Next.js",
+  title: "ZeroChat",
+  description: "Privacy-first agentic chat to talk to top frontier models",
 };
 
 export default function RootLayout({
