@@ -239,7 +239,7 @@ export async function POST(req: Request) {
             gateway: getGatewayConfig(finalModel!),
           },
           system: `
-          These are user custom instructions-${customData}.
+          These are user preferences/traits-${customData}.
 
           remember:never use any tool when user is passing greetings or compliments.rest aways use tools .
 
