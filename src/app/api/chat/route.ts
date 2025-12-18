@@ -241,7 +241,9 @@ export async function POST(req: Request) {
           system: `
           These are user custom instructions-${customData}.
 
-          note:use webSearch tool for one time then crawl that useful urls together instead of using webSearch tool again and again to crawl pages.
+          remember:never use any tool when user is passing greetings or compliments.rest aways use tools .
+
+          note:use webSearch tool for one time only to get all relevants urls then crawl that useful urls together instead of using webSearch tool again and again to crawl pages.
 
           `,
           model: finalModel!,

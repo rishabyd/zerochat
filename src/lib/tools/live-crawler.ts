@@ -6,12 +6,12 @@ const exa = new Exa(process.env.EXA_API_KEY);
 
 export const urlCrawler = tool({
   description:
-    "Crawl multiple websites from provided URLs and extract content from main pages plus subpages. Returns text, metadata, and optionally extracted links for each URL.",
+    "Crawl  multiple websites in batches from provided URLs and extract content from main pages plus subpages. Returns text, metadata, and optionally extracted links for each URL.",
   inputSchema: z.object({
     urls: z
       .array(z.url())
-      .min(1)
-      .max(10)
+      .min(5)
+      .max(50)
       .describe("Array of URL strings to crawl (1-10 URLs)"),
     subpages: z
       .number()

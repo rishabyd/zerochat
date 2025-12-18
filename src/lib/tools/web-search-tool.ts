@@ -10,22 +10,19 @@ export const webSearch = tool({
     query: z.string().min(1).max(100).describe("The search query"),
     numResults: z
       .number()
-      .min(1)
-      .max(10)
+      .min(5)
+      .max(40)
       .optional()
-      .default(5)
+      .default(10)
       .describe("Number of results to return"),
   }),
   execute: async ({ query, numResults }) => {
     try {
       const { results } = await exa.searchAndContents(query, {
         numResults,
-        type: "auto",
+        type: "fast",
         extras: {
-          links: 3,
-        },
-        text: {
-          maxCharacters: 2000,
+          links: 10,
         },
         excludeSourceDomains: [
           "reddit.com",
@@ -45,7 +42,6 @@ export const webSearch = tool({
       return results.map((result) => ({
         title: result.title,
         url: result.url,
-        content: result.text,
         links: result.extras.links,
         publishedDate: result.publishedDate,
         score: result.score,
@@ -53,7 +49,7 @@ export const webSearch = tool({
     } catch (err) {
       console.error("❌ webSearch failed:", err);
       throw new Error(
-        `Search failed: ${err instanceof Error ? err.message : "Unknown error"}`
+        `Search failed: ${err instanceof Error ? err.message : "Unknown error"}`,
       );
     }
   },

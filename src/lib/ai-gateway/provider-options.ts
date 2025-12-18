@@ -5,8 +5,8 @@ export const getGatewayConfig = (model: string) => {
       only: ["anthropic", "bedrock"],
     },
     "meta/llama-3.1-8b": {
-      order: ["cerebras", "deepinfra"],
-      only: ["cerebras", "deepinfra"],
+      order: ["deepinfra", "cerebras"],
+      only: ["deepinfra", "cerebras"],
     },
     "amazon/nova-lite": {
       order: ["bedrock"],
