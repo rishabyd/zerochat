@@ -20,9 +20,9 @@ export const webSearch = tool({
     try {
       const { results } = await exa.searchAndContents(query, {
         numResults,
-        type: "fast",
+        type: "auto",
         extras: {
-          links: 10,
+          links: 5,
         },
         excludeSourceDomains: [
           "reddit.com",
