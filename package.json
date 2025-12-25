@@ -8,6 +8,9 @@
     "lint": "bun next lint",
     "db:push": "bunx --bun prisma db push"
   },
+  "overrides": {
+    "parse5": "7.1.2"
+  },
   "name": "zerochat",
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.11",
