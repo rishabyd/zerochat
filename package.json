@@ -8,9 +8,6 @@
     "lint": "bun next lint",
     "db:push": "bunx --bun prisma db push"
   },
-  "overrides": {
-    "parse5": "7.1.2"
-  },
   "name": "zerochat",
   "dependencies": {
     "@ai-sdk/gateway": "^1.0.11",
@@ -52,7 +49,6 @@
     "embla-carousel-react": "^8.6.0",
     "exa-js": "^1.9.3",
     "highlight.js": "^11.11.1",
-    "isomorphic-dompurify": "^2.26.0",
     "katex": "^0.16.22",
     "lucide-react": "^0.511.0",
     "markdown-it": "^14.1.0",
@@ -84,6 +80,7 @@
     "unified": "^11.0.5",
     "use-stick-to-bottom": "^1.1.1",
     "usehooks-ts": "^3.1.1",
+    "xss": "^1.0.15",
     "zod": "^4.1.5",
     "zustand": "^5.0.7"
   },
