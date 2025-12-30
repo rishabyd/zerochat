@@ -28,7 +28,6 @@ export async function GET(
       createdAt: chatSession?.createdAt,
       title: chatSession?.title,
     };
-    // Convert database messages to UIMessage format
     const messages: UIMessage<unknown, UIDataTypes, UITools>[] =
       chatSession?.messages.map((msg) => ({
         id: msg.id,

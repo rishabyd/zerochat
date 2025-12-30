@@ -1,6 +1,6 @@
 "use client";
 
-import { fetcher } from "@/lib/fetcher"; // Make sure path matches your setup
+import { fetcher } from "@/lib/fetcher";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { isValidSessionId } from "@/lib/utils";
@@ -24,7 +24,7 @@ export default function SessionWrapper({
   const { data, error, mutate } = useSWRImmutable(
     isValidSessionId(sessionId) ? `/api/sessions/${sessionId}` : null,
     fetcher,
-    { fallbackData: { messages: initialMessages } }
+    { fallbackData: { messages: initialMessages } },
   );
 
   useEffect(() => {

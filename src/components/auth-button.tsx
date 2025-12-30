@@ -3,7 +3,6 @@
 import { signIn, signOut, useSession } from "@/lib/auth-client";
 import { Button } from "./ui/button";
 
-// Authentication button component that shows different states based on user login status
 export function AuthButton() {
   const { data } = useSession();
   const isSignedIn = !!data?.session?.id;

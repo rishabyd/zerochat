@@ -21,7 +21,6 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Fetch custom instructions from DB on mount
   useEffect(() => {
     async function fetchSettings() {
       try {
@@ -42,7 +41,6 @@ export default function SettingsPage() {
     fetchSettings();
   }, []);
 
-  // Handle form submission with server action
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSaving(true);
@@ -50,10 +48,8 @@ export default function SettingsPage() {
     try {
       await SaveCustomInstructions({ text: customInstructions });
       toast.success("Instructions saved successfully");
-      // Optional: Show success toast/notification
     } catch (error) {
       console.error("Failed to update settings:", error);
-      // Optional: Show error toast/notification
     } finally {
       setIsSaving(false);
     }
@@ -118,7 +114,7 @@ export default function SettingsPage() {
                       id="customInstructions"
                       name="customInstructions"
                       placeholder="e.g., I'm a software developer working with React and TypeScript..."
-                      className="min-h-[120px] resize-none"
+                      className="min-h-30 resize-none"
                       value={customInstructions}
                       onChange={(e) => setCustomInstructions(e.target.value)}
                       disabled={isLoading}

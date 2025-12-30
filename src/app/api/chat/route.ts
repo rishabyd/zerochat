@@ -387,7 +387,6 @@ export async function POST(req: Request) {
           },
         });
 
-        // ✅ Check for cancellation before creating response
         if (combinedSignal.aborted) {
           if (partialResponse.trim()) {
             await logPartialResponse(
@@ -402,10 +401,9 @@ export async function POST(req: Request) {
           return Response.json({ error: "Request cancelled" }, { status: 499 });
         }
 
-        // ✅ Return response with consumeSseStream option for proper abort handling
         return result.toUIMessageStreamResponse({
           originalMessages: messagesForAI,
-          consumeSseStream: consumeStream, // ✅ This ensures onFinish/onAbort run on abort
+          consumeSseStream: consumeStream, 
         });
       } catch (error: unknown) {
         if (partialResponse.trim()) {

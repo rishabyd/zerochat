@@ -58,33 +58,25 @@ function ChatPage({
   });
 
   const displayMessages = useMemo(() => {
-    // If no seed messages, just use streaming messages
     if (!seedMessages?.length) return messages;
-
-    // If no streaming messages yet, use seed messages
     if (!messages.length) return seedMessages;
-
-    // Create a Map to track unique messages by ID (Map preserves insertion order)
     const messageMap = new Map<
       string,
       UIMessage<unknown, UIDataTypes, UITools>
     >();
 
-    // First, add all seed messages
     seedMessages.forEach((msg) => {
       if (msg.id) {
         messageMap.set(msg.id, msg);
       }
     });
 
-    // Then add/update with streaming messages (these take precedence for same ID)
     messages.forEach((msg) => {
       if (msg.id) {
         messageMap.set(msg.id, msg);
       }
     });
 
-    // Convert back to array, maintaining order
     return Array.from(messageMap.values());
   }, [seedMessages, messages]);
 
@@ -104,8 +96,8 @@ function ChatPage({
     ) => {
       return sendMessage(message, {
         body: {
-          chatMode: globalChatMode || "agent", // Use global chatMode from store
-          model: globalModel || "auto", // Use global model from store
+          chatMode: globalChatMode || "agent",
+          model: globalModel || "auto", 
           ...(options?.body || {}),
           sessionId,
           currentMessage: createUserMessage(message.text),
@@ -117,30 +109,25 @@ function ChatPage({
 
   const memoizedStop = useCallback(() => stop(), [stop]);
 
-  // Track if auto-send has already been triggered to prevent duplicate sends
   const hasAutoSentRef = useRef(false);
   useEffect(() => {
-    if (hasAutoSentRef.current) return; // Already auto-sent, don't repeat
-    if (!initialPrompt) return; // No initial prompt to send
-    if (status !== "ready") return; // Chat not ready yet
+    if (hasAutoSentRef.current) return; 
+    if (!initialPrompt) return; 
+    if (status !== "ready") return; 
 
-    // Check if this is an existing session with messages - if so, don't auto-send
     const hasExistingMessages =
       (seedMessages && seedMessages.length > 0) || messages.length > 0;
 
     if (hasExistingMessages) {
-      hasAutoSentRef.current = true; // Mark as sent to prevent auto-send in existing sessions
-      setPrompt(""); // Clear the initial prompt to prevent issues
+      hasAutoSentRef.current = true;  
+      setPrompt(""); 
       return;
     }
 
-    // Only auto-send if we have a valid session, are ready, and this is a new session
     if (sessionId && status === "ready") {
-      hasAutoSentRef.current = true; // Mark as sent to prevent duplicates
+      hasAutoSentRef.current = true; 
       const text = initialPrompt;
-      setPrompt(""); // Clear prompt after sending
-
-      // Send immediately for new sessions
+      setPrompt(""); 
       sendWithSession({ text });
     }
   }, [
@@ -166,7 +153,7 @@ function ChatPage({
   return (
     <div className="fixed inset-0 bg-input overflow-hidden flex flex-col md:relative md:h-full scrollbar-none">
       {/* Mobile Top Bar */}
-      <div className="flex-shrink-0 bg-sidebar border-b border-border md:hidden">
+      <div className="shrink-0 bg-sidebar border-b border-border md:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <SidebarTrigger className="p-2 hover:bg-accent rounded-none transition-colors" />
@@ -199,7 +186,7 @@ function ChatPage({
         <MessageArea messages={displayMessages} />
       </div>
 
-      <motion.div className="flex-shrink-0 mx-auto pb-2 lg:pb-4">
+      <motion.div className="shrink-0 mx-auto pb-2 lg:pb-4">
         <MainInputBox
           stopResponse={memoizedStop}
           sendMessage={sendWithSession}
