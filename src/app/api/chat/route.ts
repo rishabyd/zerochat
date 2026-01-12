@@ -1,11 +1,9 @@
 import { saveMessage } from "@/lib/actions/chat-actions";
-import { GetBestModel } from "@/lib/ai-gateway/model-registry";
 import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
 import { getServerUserId } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getCustomPrompt } from "@/lib/services/user-profile";
 import { getSession } from "@/lib/services/user-sessions";
-import { urlCrawler } from "@/lib/tools/live-crawler";
 import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
@@ -15,8 +13,8 @@ import {
   consumeStream,
   convertToModelMessages,
   smoothStream,
-  stepCountIs,
   streamText,
+  stepCountIs,
 } from "ai";
 import { NextResponse } from "next/server";
 
@@ -81,17 +79,12 @@ const logPartialResponse = async (
         `💾 Saving both USER and AI messages (AI: ${partialContent.length} chars, USER: ${userContent.length} chars)`,
       );
 
-      // Use default values if model or complexity are undefined
-      const finalModel = model || "unknown";
-      const finalComplexity = complexity || 0;
-
       // Save USER message
       await saveMessage({
         sessionId,
         role: "USER",
         content: userContent,
-        model: finalModel,
-        complexity: finalComplexity,
+        model: model,
       });
 
       // Save AI message
@@ -99,8 +92,7 @@ const logPartialResponse = async (
         sessionId,
         role: "AI",
         content: partialContent,
-        model: finalModel,
-        complexity: finalComplexity,
+        model: model,
       });
     }
   } catch (error) {
@@ -171,10 +163,11 @@ export async function POST(req: Request) {
       const body = (await req.json()) as {
         currentMessage: UIMessage<unknown, UIDataTypes, UITools>;
         sessionId: string;
-        chatMode: "agent" | "simple";
+        webSearch: boolean;
         model: string;
       };
-      const { sessionId, currentMessage, chatMode, model } = body;
+
+      const { sessionId, currentMessage, webSearch: isWebSearch, model } = body;
 
       if (!sessionId) {
         cleanup();
@@ -224,38 +217,22 @@ export async function POST(req: Request) {
       let partialResponse = "";
 
       try {
-        const messagesForRouter = messagesForAI.slice(-4);
-
-        const modelResult =
-          model === "auto"
-            ? await GetBestModel(messagesForRouter, chatMode)
-            : null;
-        const autoModel = modelResult?.autoModel;
-        const complexity = modelResult?.complexity;
-        const finalModel = model === "auto" ? autoModel : model;
-
         const result = streamText({
           providerOptions: {
-            gateway: getGatewayConfig(finalModel!),
+            gateway: getGatewayConfig(model),
           },
           system: `
           These are user preferences/traits-${customData}.
 
-          remember:never use any tool when user is passing greetings or compliments.rest aways use tools .
-
-          note:use webSearch tool is just for getting relevant links and then you will use crawler to crawl that all links in batch for best performance.
-
-          `,
-          model: finalModel!,
-          tools:
-            body.chatMode === "agent"
-              ? {
-                  webSearch,
-                  urlCrawler,
-                }
-              : undefined,
-          stopWhen: body.chatMode === "agent" ? [stepCountIs(10)] : undefined,
-          toolChoice: body.chatMode === "agent" ? "auto" : undefined,
+          remember: never use any tool when user is passing greetings or compliments. rest always use tools if needed.`,
+          model,
+          tools: isWebSearch
+            ? {
+                webSearch,
+              }
+            : undefined,
+          stopWhen: stepCountIs(3),
+          toolChoice: isWebSearch ? "auto" : undefined,
           messages: convertToModelMessages(messagesForAI),
           experimental_transform: smoothStream({
             delayInMs: 20,
@@ -270,8 +247,7 @@ export async function POST(req: Request) {
                 sessionId,
                 currentMessage,
                 partialResponse,
-                finalModel,
-                complexity,
+                model,
               );
             }
           },
@@ -280,7 +256,6 @@ export async function POST(req: Request) {
             try {
               if (combinedSignal.aborted) {
                 console.log("⚠️ Stream finished with abort");
-                // onAbort already handled saving partial response
                 return;
               }
 
@@ -320,6 +295,7 @@ export async function POST(req: Request) {
                     };
                   }
                 )?.usageMetadata || {};
+
               const totalTokens =
                 (usage.promptTokenCount || 0) +
                 (usage.candidatesTokenCount || 0);
@@ -342,7 +318,7 @@ export async function POST(req: Request) {
                     userId,
                     sessionId,
                     content: assistantContent,
-                    model: finalModel!,
+                    model: model!,
                   });
                 } catch (loggingError) {
                   console.error("Failed to log messages:", loggingError);
@@ -360,8 +336,7 @@ export async function POST(req: Request) {
                 sessionId,
                 currentMessage,
                 partialResponse,
-                finalModel,
-                complexity,
+                model,
               );
             }
           },
@@ -379,8 +354,7 @@ export async function POST(req: Request) {
                 sessionId,
                 currentMessage,
                 partialResponse,
-                finalModel,
-                complexity,
+                model,
               );
             }
             cleanup();
@@ -393,8 +367,7 @@ export async function POST(req: Request) {
               sessionId,
               currentMessage,
               partialResponse,
-              finalModel,
-              complexity,
+              model,
             );
           }
           cleanup();
@@ -403,7 +376,7 @@ export async function POST(req: Request) {
 
         return result.toUIMessageStreamResponse({
           originalMessages: messagesForAI,
-          consumeSseStream: consumeStream, 
+          consumeSseStream: consumeStream,
         });
       } catch (error: unknown) {
         if (partialResponse.trim()) {

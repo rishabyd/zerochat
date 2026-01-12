@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -6,20 +7,14 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { Toggle } from "@/components/ui/toggle";
+import { Toggle } from "@/components/ui/toggle"; // Changed from Switch to Toggle
 import { SyncClientSession } from "@/lib/actions/chatSession-action";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { usePayloadStore } from "@/lib/store/usePayloadStore";
 import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { generateClientSessionId, isValidSessionId } from "@/lib/utils";
 import { sanitizeText } from "@/lib/utils/sanitize";
-import {
-  Forward,
-  Frame,
-  MessageCircleMore,
-  Sparkles,
-  SquareDashed,
-} from "lucide-react";
+import { Forward, Globe, Sparkles, SquareDashed } from "lucide-react";
 import { motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -29,25 +24,29 @@ import { InputBoxSkeleton } from "./input-box-skeleton";
 import SendButton from "./send-button";
 
 const MODELS = [
-  { value: "auto", label: "Auto", icon: Sparkles },
   {
     value: "anthropic/claude-opus-4.5",
     label: "Claude Opus 4.5",
     icon: Sparkles,
   },
   {
-    value: "anthropic/claude-sonnet-4.5",
-    label: "Claude Sonnet 4.5",
+    value: "google/gemini-3-pro-preview",
+    label: "Gemini 3 Pro",
     icon: Sparkles,
   },
   {
-    value: "anthropic/claude-haiku-4.5",
-    label: "Claude Haiku 4.5",
+    value: "google/gemini-3-flash",
+    label: "Gemini 3 Flash",
     icon: Sparkles,
   },
   {
-    value: "anthropic/claude-3-haiku",
-    label: "Claude Haiku 3",
+    value: "google/gemini-2.5-flash-lite",
+    label: "Gemini 2.5 Flash Lite",
+    icon: Sparkles,
+  },
+  {
+    value: "zai/glm-4.7",
+    label: "GLM 4.7",
     icon: Sparkles,
   },
 ] as const;
@@ -59,7 +58,6 @@ function MainInputBox({
   status,
   stopResponse,
   disabled = false,
-  loading = false,
 }: {
   sendMessage?: (
     message: { text: string },
@@ -79,14 +77,13 @@ function MainInputBox({
   const setThinking = useChatStore((s) => s.setThinking);
   const setCurrentSessionId = useChatStore((s) => s.setCurrentSessionId);
 
-  // Global state for model and chatMode
+  // Global state for model
   const globalModel = usePayloadStore((s) => s.model);
-  const globalChatMode = usePayloadStore((s) => s.chatMode);
   const setGlobalModel = usePayloadStore((s) => s.setModel);
-  const setGlobalChatMode = usePayloadStore((s) => s.setChatMode);
 
-  // Agent mode toggle state - synced with global store
-  const [agentMode, setAgentMode] = useState(globalChatMode === "agent");
+  // Web Search State - using global store
+  const globalWebSearch = usePayloadStore((s) => s.webSearch);
+  const setGlobalWebSearch = usePayloadStore((s) => s.setWebSearch);
 
   // Model selection state - synced with global store
   const [selectedModel, setSelectedModel] = useState<ModelValue>(
@@ -103,14 +100,6 @@ function MainInputBox({
     setIsNavigating(false);
   }, [path]);
 
-  // Sync local state with global store whenever they change
-  useEffect(() => {
-    const newChatMode = agentMode ? "agent" : "simple";
-    if (newChatMode !== globalChatMode) {
-      setGlobalChatMode(newChatMode);
-    }
-  }, [agentMode, globalChatMode, setGlobalChatMode]);
-
   useEffect(() => {
     if (selectedModel !== globalModel) {
       setGlobalModel(selectedModel);
@@ -122,6 +111,14 @@ function MainInputBox({
       e.preventDefault();
       if (!isReady || isNavigating || disabled || prompt.trim().length === 0)
         return;
+
+      // Prepare body options including Web Search toggle
+      const messageOptions = {
+        body: {
+          model: globalModel,
+          webSearch: globalWebSearch, // Passing web toggle state
+        },
+      };
 
       if (path === "/") {
         setIsNavigating(true);
@@ -137,27 +134,20 @@ function MainInputBox({
           }
 
           const sanitizedPrompt = sanitizeText(prompt);
-          const messageOptions = {
-            body: {
-              chatMode: globalChatMode,
-              model: globalModel,
-            },
-          };
 
           setPrompt(sanitizedPrompt);
           setCurrentSessionId(clientSessionId);
           router.replace(`c/${clientSessionId}`);
 
-          // Send message immediately after navigation with model and chatMode
+          // Send message immediately after navigation
           if (sendMessage) {
-            // Small delay to ensure navigation completes
             setTimeout(() => {
               sendMessage({ text: sanitizedPrompt }, messageOptions);
               setPrompt("");
             }, 100);
           }
 
-          // Background sync - don't await
+          // Background sync
           SyncClientSession({ sessionId: clientSessionId, title }).catch(() => {
             toast.info("Background sync failed!");
           });
@@ -168,17 +158,9 @@ function MainInputBox({
         return;
       }
 
-      // Send message with chat mode AND model selection
+      // Send message in existing chat
       if (sendMessage) {
-        sendMessage(
-          { text: prompt },
-          {
-            body: {
-              chatMode: globalChatMode,
-              model: globalModel, // Always has value, defaults to "auto"
-            },
-          },
-        );
+        sendMessage({ text: prompt }, messageOptions);
         setPrompt("");
       }
     },
@@ -192,8 +174,8 @@ function MainInputBox({
       setCurrentSessionId,
       router,
       sendMessage,
-      globalChatMode,
       globalModel,
+      globalWebSearch,
     ],
   );
 
@@ -220,15 +202,19 @@ function MainInputBox({
     ? "Chat is currently unavailable"
     : "Ask anything...";
 
+  // Helper to get the display label
+  const activeModelLabel =
+    MODELS.find((m) => m.value === selectedModel)?.label || selectedModel;
+
   return (
     <motion.form
       transition={{ duration: 0.2 }}
       layout
       onSubmit={handleSubmit}
-      className={`w-[96vw] origin-center  lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
-                 h-fit flex p-2 gap-2 border-2 items-center bg-sidebar ${
-                   disabled ? "cursor-not-allowed" : ""
-                 }`}
+      className={`w-[96vw] origin-center lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
+                  h-fit flex p-2 gap-2 border-2 items-center bg-sidebar ${
+                    disabled ? "cursor-not-allowed" : ""
+                  }`}
     >
       <TextareaAutosize
         placeholder={placeholderText}
@@ -244,57 +230,49 @@ function MainInputBox({
         disabled={disabled}
       />
 
-      {/* Agent Mode Toggle */}
-      <div className="flex h-full items-center">
-        <Toggle
-          aria-label="Toggle agent mode"
-          size="lg"
-          variant="outline"
-          pressed={agentMode}
-          onPressedChange={setAgentMode}
-          disabled={disabled}
-          className="data-[state=on]:bg-input/30 data-[state=on]:hover:bg-input/50
-                     data-[state=off]:bg-input/30 data-[state=off]:hover:bg-input/50  border-2
-                     transition-all duration-200 cursor-pointer "
-        >
-          {agentMode ? (
-            <div className="flex px-1 gap-1 items-center">
-              <Frame className="size-5 text-purple-500" />
-              <span className="text-sm text-purple-500 font-medium">Agent</span>
-            </div>
-          ) : (
-            <div className="flex px-1 gap-1 items-center">
-              <MessageCircleMore className="size-5 text-blue-500" />
-              <span className="text-sm text-blue-500 font-medium">Chat</span>
-            </div>
-          )}
-        </Toggle>
-      </div>
-      {/* Model Selector - Clean */}
+      {/* Model Selector */}
       <div className="flex h-full items-center">
         <Select
           value={selectedModel}
           onValueChange={(value: ModelValue) => setSelectedModel(value)}
           disabled={disabled}
         >
-          <SelectTrigger
-            className={`h-full  data-[size=default]:h-10 border-2 rounded-none  cursor-pointer`}
-          >
-            <Sparkles className={`size-4  `} />
+          <SelectTrigger className="h-10 border-2 rounded-none cursor-pointer min-w-[140px] px-3 font-medium text-sm">
+            <span className="truncate">{activeModelLabel}</span>
           </SelectTrigger>
-          <SelectContent className=" border-2 bg-background/70 backdrop-blur-lg  ">
+          <SelectContent className="border-2 bg-background/70 backdrop-blur-lg">
             {MODELS.map((model) => (
               <SelectItem
                 key={model.value}
                 value={model.value}
-                className="cursor-pointer  hover:bg-accent/30   rounded-none"
+                className="cursor-pointer hover:bg-accent/30 rounded-none"
               >
-                {model.label}
+                <div className="flex items-center gap-2">
+                  <model.icon className="size-4" />
+                  <span>{model.label}</span>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
+
+      {/* Web Toggle Button */}
+      <div className="flex items-center h-full">
+        <Toggle
+          pressed={globalWebSearch}
+          onPressedChange={setGlobalWebSearch}
+          disabled={disabled}
+          variant="outline"
+          aria-label="Toggle Web Search"
+          className={` cursor-pointer `}
+        >
+          <Globe
+            className={`size-5 ${globalWebSearch ? "text-blue-600 " : ""}`}
+          />
+        </Toggle>
+      </div>
+
       <motion.div
         layout
         initial={{ opacity: 0 }}
@@ -304,7 +282,7 @@ function MainInputBox({
       >
         {isReady ? (
           <SendButton
-            className=" hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-full cursor-pointer !border-2"
+            className="hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-10 cursor-pointer !border-2"
             props={{
               type: "submit",
               disabled:
@@ -316,8 +294,8 @@ function MainInputBox({
         ) : (
           <Button
             variant="outline"
-            className="hover:text-red-600 bg-accent border-2 h-full text-white
-                       hover:bg-red-500  cursor-pointer hover:scale-105 duration-300"
+            className="hover:text-red-600 bg-accent border-2 h-10 text-white
+                        hover:bg-red-500 cursor-pointer hover:scale-105 duration-300"
             onClick={handleStop}
             disabled={disabled}
           >

@@ -50,7 +50,6 @@ model ChatMessage {
   userId     String
   user       User        @relation(fields: [userId], references: [id])
   webUsed    Boolean     @default(false)
-  creditUsed Int?
 
   @@index([modelUsed])
   @@index([userId])

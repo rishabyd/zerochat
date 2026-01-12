@@ -22,7 +22,7 @@ export async function GET() {
         timestamp: new Date().toISOString(),
         stopImmediately: true,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

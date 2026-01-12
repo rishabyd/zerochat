@@ -8,11 +8,23 @@ export const getGatewayConfig = (model: string) => {
       order: ["deepinfra", "cerebras"],
       only: ["deepinfra", "cerebras"],
     },
+    "google/gemini-2.5-flash-lite": {
+      order: ["vertex"],
+      only: ["vertex"],
+    },
+    "google/gemini-3-flash": {
+      order: ["vertex"],
+      only: ["vertex"],
+    },
+    "google/gemini-3-pro-preview": {
+      order: ["vertex"],
+      only: ["vertex"],
+    },
     "amazon/nova-lite": {
       order: ["bedrock"],
       only: ["bedrock"],
     },
-    "deepseek/deepseek-v3.2": {
+    "zai/glm-4.7": {
       order: ["deepinfra"],
       only: ["deepinfra"],
     },

@@ -5,15 +5,15 @@ import { z } from "zod";
 export const exa = new Exa(process.env.EXA_API_KEY);
 
 export const webSearch = tool({
-  description: "Search the web for up-to-date information",
+  description: "Search the web for up-to-date information, news, and articles.",
   inputSchema: z.object({
-    query: z.string().min(1).max(100).describe("The search query"),
+    query: z.string().min(1).max(500).describe("The search query"),
     numResults: z
       .number()
-      .min(5)
-      .max(40)
+      .min(1)
+      .max(20)
       .optional()
-      .default(10)
+      .default(5)
       .describe("Number of results to return"),
   }),
   execute: async ({ query, numResults }) => {
@@ -21,36 +21,39 @@ export const webSearch = tool({
       const { results } = await exa.searchAndContents(query, {
         numResults,
         type: "auto",
-        extras: {
-          links: 5,
+        useAutoprompt: true,
+        text: true,
+        highlights: {
+          numSentences: 2,
+          highlightsPerUrl: 1,
         },
-        excludeSourceDomains: [
+        excludeDomains: [
           "reddit.com",
           "quora.com",
           "twitter.com",
-          "aljazeera.com",
+          "facebook.com",
+          "instagram.com",
+          "tiktok.com",
         ],
       });
 
       if (!results?.length) {
-        return {
-          success: false,
-          error: `No results for: "${query}"`,
-        };
+        return `No results found for query: "${query}"`;
       }
 
       return results.map((result) => ({
         title: result.title,
         url: result.url,
-        links: result.extras.links,
         publishedDate: result.publishedDate,
-        score: result.score,
+        author: result.author,
+        content: result.text
+          ? result.text.slice(0, 1500)
+          : "No text content available",
+        highlight: result.highlights?.[0] || null,
       }));
     } catch (err) {
       console.error("❌ webSearch failed:", err);
-      throw new Error(
-        `Search failed: ${err instanceof Error ? err.message : "Unknown error"}`,
-      );
+      return `Search tool encountered an error: ${err instanceof Error ? err.message : "Unknown error"}`;
     }
   },
 });
