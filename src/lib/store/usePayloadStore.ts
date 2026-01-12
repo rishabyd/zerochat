@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { payloadType } from "../types";
 
 type PayloadStore = {
   prompt: string;
@@ -12,10 +11,7 @@ type PayloadStore = {
 
   setAll: (
     values: Partial<
-      Omit<
-        PayloadStore,
-        "setPrompt" | "setModel" | "setWebSearch" | "setAll" | "reset"
-      >
+      Omit<PayloadStore, "setPrompt" | "setModel" | "setWebSearch" | "setAll" | "reset">
     >,
   ) => void;
   reset: () => void;

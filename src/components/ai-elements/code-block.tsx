@@ -1,15 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
 import { createContext, useContext, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  oneDark,
-  oneLight,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type CodeBlockContextType = {
   code: string;
@@ -37,10 +34,7 @@ export const CodeBlock = ({
   <CodeBlockContext.Provider value={{ code }}>
     <div
       data-code-block-container="true"
-      className={cn(
-        "my-4 w-full overflow-hidden rounded-none border",
-        className
-      )}
+      className={cn("my-4 w-full overflow-hidden rounded-none border", className)}
       {...props}
     >
       <div className="relative">
@@ -48,13 +42,13 @@ export const CodeBlock = ({
           className="code-header flex items-center justify-between gap-2 px-3 py-1.5"
           style={{ background: "hsl(var(--card))" }}
         >
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
             {language}
           </span>
           <div className="flex items-center gap-1.5">{children}</div>
         </div>
         <SyntaxHighlighter
-          className="overflow-hidden dark:hidden border-0 rounded-t-none"
+          className="overflow-hidden rounded-t-none border-0 dark:hidden"
           codeTagProps={{
             className: "font-mono text-[0.95rem]",
           }}
@@ -77,7 +71,7 @@ export const CodeBlock = ({
           {code}
         </SyntaxHighlighter>
         <SyntaxHighlighter
-          className="hidden overflow-hidden dark:block border-0 rounded-t-none"
+          className="hidden overflow-hidden rounded-t-none border-0 dark:block"
           codeTagProps={{
             className: "font-mono text-[0.95rem]",
           }}
@@ -141,7 +135,7 @@ export const CodeBlockCopyButton = ({
 
   return (
     <Button
-      className={cn("shrink-0 h-7 w-7 rounded-none", className)}
+      className={cn("h-7 w-7 shrink-0 rounded-none", className)}
       onClick={copyToClipboard}
       size="icon"
       variant="ghost"

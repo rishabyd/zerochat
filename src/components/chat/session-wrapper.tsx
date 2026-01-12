@@ -1,22 +1,20 @@
 "use client";
 
+import type { UIDataTypes, UIMessage, UITools } from "ai";
+import { useEffect } from "react";
+import useSWRImmutable from "swr/immutable";
 import { fetcher } from "@/lib/fetcher";
 import { useChatStore } from "@/lib/store/useChatStore";
 import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { isValidSessionId } from "@/lib/utils";
-import { UIDataTypes, UIMessage, UITools } from "ai";
-import { useEffect } from "react";
-import useSWRImmutable from "swr/immutable";
 import { Button } from "../ui/button";
 import Chatscreen from "./chatscreen";
+
 interface SessionWrapperProps {
   sessionId: string;
   initialMessages?: UIMessage<unknown, UIDataTypes, UITools>[];
 }
-export default function SessionWrapper({
-  sessionId,
-  initialMessages = [],
-}: SessionWrapperProps) {
+export default function SessionWrapper({ sessionId, initialMessages = [] }: SessionWrapperProps) {
   const setCurrentSessionId = useChatStore((e) => e.setCurrentSessionId);
   const fetchProfile = useUserProfileStore((s) => s.fetchProfile);
   const profile = useUserProfileStore((s) => s.profile);
@@ -39,19 +37,16 @@ export default function SessionWrapper({
 
   if (error) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center p-4">
-          <p className="text-red-600 dark:text-red-400 mb-2">
+      <div className="flex h-full items-center justify-center">
+        <div className="p-4 text-center">
+          <p className="mb-2 text-red-600 dark:text-red-400">
             {`Failed to load session or session doesn't exist!`}
           </p>
           <div className={`flex gap-2`}>
             <Button onClick={() => mutate()} className="px-4 py-2">
               Retry
             </Button>
-            <Button
-              onClick={() => (window.location.href = "/")}
-              className="px-4 py-2"
-            >
+            <Button onClick={() => (window.location.href = "/")} className="px-4 py-2">
               Return to Chat
             </Button>
           </div>

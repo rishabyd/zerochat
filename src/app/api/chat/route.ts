@@ -1,22 +1,21 @@
+import { vertex } from "@ai-sdk/google-vertex";
+import type { UIDataTypes, UIMessage, UITools } from "ai";
+import {
+  consumeStream,
+  convertToModelMessages,
+  smoothStream,
+  stepCountIs,
+  streamText,
+} from "ai";
+import { NextResponse } from "next/server";
 import { saveMessage } from "@/lib/actions/chat-actions";
 import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
 import { getServerUserId } from "@/lib/auth";
 import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
 import { getCustomPrompt } from "@/lib/services/user-profile";
 import { getSession } from "@/lib/services/user-sessions";
-import { webSearch } from "@/lib/tools/web-search-tool";
 import type { StreamingError } from "@/lib/types";
 import { generateMessageId } from "@/lib/utils";
-import type { UIDataTypes, UIMessage, UITools } from "ai";
-
-import {
-  consumeStream,
-  convertToModelMessages,
-  smoothStream,
-  streamText,
-  stepCountIs,
-} from "ai";
-import { NextResponse } from "next/server";
 
 const createAssistantMessage = (
   content: string,
@@ -52,7 +51,6 @@ const logPartialResponse = async (
   userMessage: UIMessage<unknown, UIDataTypes, UITools>,
   partialResponse: string,
   model?: string,
-  complexity?: number,
 ) => {
   try {
     if (!partialResponse || typeof partialResponse !== "string") {
@@ -193,7 +191,7 @@ export async function POST(req: Request) {
       const dbMessages = session?.messages;
 
       const historyMessages: UIMessage<unknown, UIDataTypes, UITools>[] =
-        dbMessages!.map((msg) => ({
+        dbMessages?.map((msg) => ({
           id: msg.id,
           role: msg.role === "USER" ? "user" : "assistant",
           parts: [{ type: "text", text: msg.content }],
@@ -226,11 +224,8 @@ export async function POST(req: Request) {
 
           remember: never use any tool when user is passing greetings or compliments. rest always use tools if needed.`,
           model,
-          tools: isWebSearch
-            ? {
-                webSearch,
-              }
-            : undefined,
+
+          tools: isWebSearch ? webSearch : undefined,
           stopWhen: stepCountIs(3),
           toolChoice: isWebSearch ? "auto" : undefined,
           messages: convertToModelMessages(messagesForAI),

@@ -9,7 +9,7 @@ export function useIsMobile() {
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Check if window is available (client-side only)
     if (typeof window !== "undefined") {
       // Define mobile breakpoint and check screen width

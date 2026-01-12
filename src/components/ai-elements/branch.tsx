@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type BranchContextType = {
   currentBranch: number;
@@ -33,12 +33,7 @@ export type BranchProps = HTMLAttributes<HTMLDivElement> & {
   onBranchChange?: (branchIndex: number) => void;
 };
 
-export const Branch = ({
-  defaultBranch = 0,
-  onBranchChange,
-  className,
-  ...props
-}: BranchProps) => {
+export const Branch = ({ defaultBranch = 0, onBranchChange, className, ...props }: BranchProps) => {
   const [currentBranch, setCurrentBranch] = useState(defaultBranch);
   const [branches, setBranches] = useState<ReactElement[]>([]);
 
@@ -48,14 +43,12 @@ export const Branch = ({
   };
 
   const goToPrevious = () => {
-    const newBranch =
-      currentBranch > 0 ? currentBranch - 1 : branches.length - 1;
+    const newBranch = currentBranch > 0 ? currentBranch - 1 : branches.length - 1;
     handleBranchChange(newBranch);
   };
 
   const goToNext = () => {
-    const newBranch =
-      currentBranch < branches.length - 1 ? currentBranch + 1 : 0;
+    const newBranch = currentBranch < branches.length - 1 ? currentBranch + 1 : 0;
     handleBranchChange(newBranch);
   };
 
@@ -70,10 +63,7 @@ export const Branch = ({
 
   return (
     <BranchContext.Provider value={contextValue}>
-      <div
-        className={cn("grid w-full gap-2 [&>div]:pb-0", className)}
-        {...props}
-      />
+      <div className={cn("grid w-full gap-2 [&>div]:pb-0", className)} {...props} />
     </BranchContext.Provider>
   );
 };
@@ -95,7 +85,7 @@ export const BranchMessages = ({ children, ...props }: BranchMessagesProps) => {
     <div
       className={cn(
         "grid gap-2 overflow-hidden [&>div]:pb-0",
-        index === currentBranch ? "block" : "hidden"
+        index === currentBranch ? "block" : "hidden",
       )}
       key={branch.key}
       {...props}
@@ -109,11 +99,7 @@ export type BranchSelectorProps = HTMLAttributes<HTMLDivElement> & {
   from: UIMessage["role"];
 };
 
-export const BranchSelector = ({
-  className,
-  from,
-  ...props
-}: BranchSelectorProps) => {
+export const BranchSelector = ({ className, from, ...props }: BranchSelectorProps) => {
   const { totalBranches } = useBranch();
 
   // Don't render if there's only one branch
@@ -126,7 +112,7 @@ export const BranchSelector = ({
       className={cn(
         "flex items-center gap-2 self-end px-10",
         from === "assistant" ? "justify-start" : "justify-end",
-        className
+        className,
       )}
       {...props}
     />
@@ -135,11 +121,7 @@ export const BranchSelector = ({
 
 export type BranchPreviousProps = ComponentProps<typeof Button>;
 
-export const BranchPrevious = ({
-  className,
-  children,
-  ...props
-}: BranchPreviousProps) => {
+export const BranchPrevious = ({ className, children, ...props }: BranchPreviousProps) => {
   const { goToPrevious, totalBranches } = useBranch();
 
   return (
@@ -149,7 +131,7 @@ export const BranchPrevious = ({
         "size-7 shrink-0 rounded-none text-muted-foreground transition-colors",
         "hover:bg-accent hover:text-foreground",
         "disabled:pointer-events-none disabled:opacity-50",
-        className
+        className,
       )}
       disabled={totalBranches <= 1}
       onClick={goToPrevious}
@@ -165,11 +147,7 @@ export const BranchPrevious = ({
 
 export type BranchNextProps = ComponentProps<typeof Button>;
 
-export const BranchNext = ({
-  className,
-  children,
-  ...props
-}: BranchNextProps) => {
+export const BranchNext = ({ className, children, ...props }: BranchNextProps) => {
   const { goToNext, totalBranches } = useBranch();
 
   return (
@@ -179,7 +157,7 @@ export const BranchNext = ({
         "size-7 shrink-0 rounded-none text-muted-foreground transition-colors",
         "hover:bg-accent hover:text-foreground",
         "disabled:pointer-events-none disabled:opacity-50",
-        className
+        className,
       )}
       disabled={totalBranches <= 1}
       onClick={goToNext}
@@ -200,10 +178,7 @@ export const BranchPage = ({ className, ...props }: BranchPageProps) => {
 
   return (
     <span
-      className={cn(
-        "font-medium text-muted-foreground text-xs tabular-nums",
-        className
-      )}
+      className={cn("font-medium text-muted-foreground text-xs tabular-nums", className)}
       {...props}
     >
       {currentBranch + 1} of {totalBranches}

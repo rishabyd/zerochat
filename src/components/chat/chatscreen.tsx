@@ -1,10 +1,5 @@
 "use client";
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { handleClientError } from "@/lib/services/errors";
-import { useChatStore } from "@/lib/store/useChatStore";
-import { usePayloadStore } from "@/lib/store/usePayloadStore";
-import { generateMessageId } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
 import { DefaultChatTransport } from "ai";
@@ -13,6 +8,11 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { handleClientError } from "@/lib/services/errors";
+import { useChatStore } from "@/lib/store/useChatStore";
+import { usePayloadStore } from "@/lib/store/usePayloadStore";
+import { generateMessageId } from "@/lib/utils";
 import { Button } from "../ui/button";
 import MainInputBox from "./InputBox/input-box";
 import MessageArea from "./message/message-area";
@@ -28,7 +28,7 @@ function ChatPage({
   seedMessages?: UIMessage<unknown, UIDataTypes, UITools>[];
   isClientSession?: boolean;
 }) {
-  const router = useRouter();
+  const _router = useRouter();
 
   const setThinking = useChatStore((state) => state.setThinking);
   // const setError = useChatStore((state) => state.setError);
@@ -60,10 +60,7 @@ function ChatPage({
   const displayMessages = useMemo(() => {
     if (!seedMessages?.length) return messages;
     if (!messages.length) return seedMessages;
-    const messageMap = new Map<
-      string,
-      UIMessage<unknown, UIDataTypes, UITools>
-    >();
+    const messageMap = new Map<string, UIMessage<unknown, UIDataTypes, UITools>>();
 
     seedMessages.forEach((msg) => {
       if (msg.id) {
@@ -90,14 +87,11 @@ function ChatPage({
   );
 
   const sendWithSession = useCallback(
-    (
-      message: { text: string },
-      options?: { body?: Record<string, unknown> },
-    ) => {
+    (message: { text: string }, options?: { body?: Record<string, unknown> }) => {
       return sendMessage(message, {
         body: {
           chatMode: globalChatMode || "agent",
-          model: globalModel || "auto", 
+          model: globalModel || "auto",
           ...(options?.body || {}),
           sessionId,
           currentMessage: createUserMessage(message.text),
@@ -111,34 +105,25 @@ function ChatPage({
 
   const hasAutoSentRef = useRef(false);
   useEffect(() => {
-    if (hasAutoSentRef.current) return; 
-    if (!initialPrompt) return; 
-    if (status !== "ready") return; 
+    if (hasAutoSentRef.current) return;
+    if (!initialPrompt) return;
+    if (status !== "ready") return;
 
-    const hasExistingMessages =
-      (seedMessages && seedMessages.length > 0) || messages.length > 0;
+    const hasExistingMessages = (seedMessages && seedMessages.length > 0) || messages.length > 0;
 
     if (hasExistingMessages) {
-      hasAutoSentRef.current = true;  
-      setPrompt(""); 
+      hasAutoSentRef.current = true;
+      setPrompt("");
       return;
     }
 
     if (sessionId && status === "ready") {
-      hasAutoSentRef.current = true; 
+      hasAutoSentRef.current = true;
       const text = initialPrompt;
-      setPrompt(""); 
+      setPrompt("");
       sendWithSession({ text });
     }
-  }, [
-    setPrompt,
-    initialPrompt,
-    status,
-    messages.length,
-    sendWithSession,
-    sessionId,
-    seedMessages,
-  ]);
+  }, [setPrompt, initialPrompt, status, messages.length, sendWithSession, sessionId, seedMessages]);
 
   useEffect(() => {
     if (status === "submitted" || status === "streaming") {
@@ -151,17 +136,17 @@ function ChatPage({
   }, [status, setStopResponse, setThinking]);
 
   return (
-    <div className="fixed inset-0 bg-input overflow-hidden flex flex-col md:relative md:h-full scrollbar-none">
+    <div className="scrollbar-none fixed inset-0 flex flex-col overflow-hidden bg-input md:relative md:h-full">
       {/* Mobile Top Bar */}
-      <div className="shrink-0 bg-sidebar border-b border-border md:hidden">
+      <div className="shrink-0 border-border border-b bg-sidebar md:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <SidebarTrigger className="p-2 hover:bg-accent rounded-none transition-colors" />
+            <SidebarTrigger className="rounded-none p-2 transition-colors hover:bg-accent" />
             <div className="flex flex-col">
-              <h1 className="text-sm font-medium truncate">Chat Session</h1>
+              <h1 className="truncate font-medium text-sm">Chat Session</h1>
               {isClientSession && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-none animate-pulse"></div>
+                <div className="flex items-center gap-1 text-muted-foreground text-xs">
+                  <div className="h-1.5 w-1.5 animate-pulse rounded-none bg-blue-500"></div>
                   <span>Syncing...</span>
                 </div>
               )}
@@ -171,7 +156,7 @@ function ChatPage({
             <Button
               asChild
               variant="outline"
-              className="p-2 hover:bg-accent rounded-none transition-colors"
+              className="rounded-none p-2 transition-colors hover:bg-accent"
               aria-label="New chat"
             >
               <Link href="/">
@@ -182,16 +167,12 @@ function ChatPage({
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-hidden">
         <MessageArea messages={displayMessages} />
       </div>
 
-      <motion.div className="shrink-0 mx-auto pb-2 lg:pb-4">
-        <MainInputBox
-          stopResponse={memoizedStop}
-          sendMessage={sendWithSession}
-          status={status}
-        />
+      <motion.div className="mx-auto shrink-0 pb-2 lg:pb-4">
+        <MainInputBox stopResponse={memoizedStop} sendMessage={sendWithSession} status={status} />
       </motion.div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { ChatType } from "../types";
+import type { ChatType } from "../types";
 
 type ChatStore = {
   error: string; // Store error messages for display in UI
@@ -26,7 +26,6 @@ export const useChatStore = create<ChatStore>((set) => ({
   setError: (error: string) => set({ error }), // Set error message
   setThinking: (thinking: boolean) => set({ thinking }), // Set thinking state
   setStopResponse: (stopResponse: boolean) => set({ stopResponse }), // Set stop response state
-  setCurrentSessionId: (sessionId: string | null) =>
-    set({ currentSessionId: sessionId }), // Set current session ID
+  setCurrentSessionId: (sessionId: string | null) => set({ currentSessionId: sessionId }), // Set current session ID
   reset: () => set({ ...defaultPayload, currentSessionId: null }), // Reset all state
 }));

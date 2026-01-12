@@ -46,9 +46,7 @@ export const webSearch = tool({
         url: result.url,
         publishedDate: result.publishedDate,
         author: result.author,
-        content: result.text
-          ? result.text.slice(0, 1500)
-          : "No text content available",
+        content: result.text ? result.text.slice(0, 1500) : "No text content available",
         highlight: result.highlights?.[0] || null,
       }));
     } catch (err) {

@@ -5,7 +5,9 @@
     "dev": "bun --bun next dev --turbopack",
     "build": "bunx --bun prisma generate && bun --bun next build",
     "start": "bun --bun next start",
-    "lint": "bun next lint",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
     "db:push": "bunx --bun prisma db push"
   },
   "name": "zerochat",
@@ -86,7 +88,7 @@
     "zustand": "^5.0.7"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
+    "@biomejs/biome": "^2.3.11",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^20",
     "@types/pg": "^8.16.0",
@@ -95,11 +97,7 @@
     "@types/react-scroll-to-bottom": "^4.2.5",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/react-textarea-autosize": "^4.3.6",
-    "@typescript-eslint/eslint-plugin": "^8.40.0",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.1",
-    "eslint-plugin-unused-imports": "^4.2.0",
     "postcss": "^8.5.6",
     "prisma": "7.2.0",
     "tailwind-scrollbar": "^4.0.2",

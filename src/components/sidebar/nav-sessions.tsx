@@ -1,7 +1,5 @@
 "use client";
 
-import { DeleteSession } from "@/lib/actions/chatSession-action";
-import { fetcher } from "@/lib/fetcher";
 import { MessageSquareIcon, RefreshCw, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
@@ -9,6 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useTransition } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
+import { DeleteSession } from "@/lib/actions/chatSession-action";
+import { fetcher } from "@/lib/fetcher";
 import { Button } from "../ui/button";
 import {
   SidebarGroup,
@@ -81,7 +81,7 @@ export function NavSessions() {
       }
 
       toast.success("Session deleted");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to delete session");
       mutate(); // Revalidate on error
     }
@@ -104,8 +104,8 @@ export function NavSessions() {
     return (
       <SidebarGroup>
         <SidebarGroupLabel>Sessions</SidebarGroupLabel>
-        <div className="p-4 space-y-2">
-          <p className="text-sm text-destructive">Failed to load sessions</p>
+        <div className="space-y-2 p-4">
+          <p className="text-destructive text-sm">Failed to load sessions</p>
           <Button
             variant="outline"
             size="sm"
@@ -113,9 +113,7 @@ export function NavSessions() {
             disabled={isPending}
             className="w-full"
           >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${isPending && "animate-spin"}`}
-            />
+            <RefreshCw className={`mr-2 h-4 w-4 ${isPending && "animate-spin"}`} />
             Retry
           </Button>
         </div>
@@ -125,7 +123,7 @@ export function NavSessions() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="flex items-center justify-between h-12 px-2">
+      <SidebarGroupLabel className="flex h-12 items-center justify-between px-2">
         <span>Sessions</span>
         <Button
           variant="ghost"
@@ -149,10 +147,8 @@ export function NavSessions() {
                   exit={{ opacity: 0, y: -10 }}
                   className="px-4 py-8 text-center"
                 >
-                  <p className="text-sm text-muted-foreground">
-                    No sessions yet
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-muted-foreground text-sm">No sessions yet</p>
+                  <p className="mt-1 text-muted-foreground text-xs">
                     Start a new chat to create one
                   </p>
                 </motion.div>
@@ -172,7 +168,7 @@ export function NavSessions() {
                     <SidebarMenuButton
                       asChild
                       isActive={item.isActive}
-                      className="rounded-none group"
+                      className="group rounded-none"
                     >
                       <Link href={item.href}>
                         <MessageSquareIcon className="h-4 w-4" />
@@ -182,9 +178,9 @@ export function NavSessions() {
 
                     <SidebarMenuAction
                       onClick={() => handleDelete(item.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="opacity-0 transition-opacity group-hover:opacity-100"
                     >
-                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive transition-colors" />
+                      <Trash2 className="h-4 w-4 text-muted-foreground transition-colors hover:text-destructive" />
                       <span className="sr-only">Delete session</span>
                     </SidebarMenuAction>
                   </SidebarMenuItem>

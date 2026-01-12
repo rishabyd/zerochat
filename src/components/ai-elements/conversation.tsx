@@ -1,17 +1,17 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { ArrowDownIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useCallback } from "react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
 export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
-    className={cn("relative flex-1  overflow-y-auto chat-scrollbar", className)}
+    className={cn("chat-scrollbar relative flex-1 overflow-y-auto", className)}
     initial="instant"
     resize="smooth"
     role="log"
@@ -19,14 +19,9 @@ export const Conversation = ({ className, ...props }: ConversationProps) => (
   />
 );
 
-export type ConversationContentProps = ComponentProps<
-  typeof StickToBottom.Content
->;
+export type ConversationContentProps = ComponentProps<typeof StickToBottom.Content>;
 
-export const ConversationContent = ({
-  className,
-  ...props
-}: ConversationContentProps) => (
+export const ConversationContent = ({ className, ...props }: ConversationContentProps) => (
   <StickToBottom.Content className={cn("p-4", className)} {...props} />
 );
 
@@ -46,8 +41,8 @@ export const ConversationScrollButton = ({
     !isAtBottom && (
       <Button
         className={cn(
-          "absolute bottom-4  !bg-background cursor-pointer left-[50%] translate-x-[-50%] rounded-none",
-          className
+          "!bg-background absolute bottom-4 left-[50%] translate-x-[-50%] cursor-pointer rounded-none",
+          className,
         )}
         onClick={handleScrollToBottom}
         size="icon"

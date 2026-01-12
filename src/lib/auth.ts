@@ -17,14 +17,10 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          console.log(
-            `New user created: ${user.email}. Creating settings row...`
-          );
+          console.log(`New user created: ${user.email}. Creating settings row...`);
 
           if (!user.id) {
-            console.error(
-              "User created but ID is missing. Cannot create settings row."
-            );
+            console.error("User created but ID is missing. Cannot create settings row.");
             return;
           }
 
@@ -34,13 +30,11 @@ export const auth = betterAuth({
               update: {},
               create: { userId: user.id },
             });
-            console.log(
-              `Successfully created settings row for user ${user.id}`
-            );
+            console.log(`Successfully created settings row for user ${user.id}`);
           } catch (error) {
             console.error(
               "Failed to create settings row for new user:",
-              error instanceof Error ? error.stack ?? error : error
+              error instanceof Error ? (error.stack ?? error) : error,
             );
           }
         },

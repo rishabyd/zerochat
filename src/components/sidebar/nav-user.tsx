@@ -1,7 +1,8 @@
 "use client";
 
 import { ChevronsUpDown } from "lucide-react";
-
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,11 +18,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { UnifiedProfile } from "@/lib/types";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { NavUserSkeleton } from "./nav-user-skeleton";
 import { authClient } from "@/lib/auth-client";
+import type { UnifiedProfile } from "@/lib/types";
+import { NavUserSkeleton } from "./nav-user-skeleton";
 
 export function NavUser({
   profile,
@@ -66,7 +65,7 @@ export function NavUser({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56  rounded-none"
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-none"
             side={isMobile ? "bottom" : "top"}
             align="end"
             sideOffset={4}
@@ -85,13 +84,13 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem className="rounded-none cursor-pointer" asChild>
+            <DropdownMenuItem className="cursor-pointer rounded-none" asChild>
               <Link href={`/settings`}>Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              className="rounded-none cursor-pointer"
+              className="cursor-pointer rounded-none"
               onClick={async () => {
                 await authClient.signOut({
                   fetchOptions: {

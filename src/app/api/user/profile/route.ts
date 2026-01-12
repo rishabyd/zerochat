@@ -1,9 +1,9 @@
+import { NextResponse } from "next/server";
 import { getServerUserId } from "@/lib/auth";
 import { toErrorResponse } from "@/lib/services/errors";
 import { getCurrentUserProfile } from "@/lib/services/user-profile";
-import { NextResponse } from "next/server";
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const userId = await getServerUserId();
     if (!userId) {

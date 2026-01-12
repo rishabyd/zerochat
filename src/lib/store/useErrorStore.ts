@@ -30,4 +30,3 @@ export function getUserFriendlyError(e: unknown): string {
   } catch {}
   return "Unexpected error";
 }
-

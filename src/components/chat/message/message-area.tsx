@@ -1,15 +1,5 @@
 "use client";
 
-import {
-  Conversation,
-  ConversationContent,
-  ConversationScrollButton,
-} from "@/components/ai-elements/conversation";
-import { Message, MessageContent } from "@/components/ai-elements/message";
-import { Response } from "@/components/ai-elements/response";
-import { Shimmer } from "@/components/ai-elements/shimmer";
-import { useChatStore } from "@/lib/store/useChatStore";
-import { isToolUIPart } from "@/lib/utils/is-tool-part";
 import type { ToolUIPart, UIDataTypes, UIMessage, UITools } from "ai";
 import {
   Archive,
@@ -23,6 +13,16 @@ import {
   Wrench,
 } from "lucide-react";
 import { useMemo } from "react";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import { Message, MessageContent } from "@/components/ai-elements/message";
+import { Response } from "@/components/ai-elements/response";
+import { Shimmer } from "@/components/ai-elements/shimmer";
+import { useChatStore } from "@/lib/store/useChatStore";
+import { isToolUIPart } from "@/lib/utils/is-tool-part";
 import MessageBubble from "./message-bubble";
 
 export type ChatMessageType = UIMessage<unknown, UIDataTypes, UITools>;
@@ -42,18 +42,10 @@ type ReasoningPart = MessagePart & {
   };
 };
 
-const TOOL_ACTIVE_STATES: Array<ToolUIPart["state"]> = [
-  "input-streaming",
-  "input-available",
-];
+const TOOL_ACTIVE_STATES: Array<ToolUIPart["state"]> = ["input-streaming", "input-available"];
 
 // States that indicate active reasoning across all providers
-const REASONING_ACTIVE_STATES = [
-  "in-progress",
-  "streaming",
-  "pending",
-  "thinking",
-];
+const REASONING_ACTIVE_STATES = ["in-progress", "streaming", "pending", "thinking"];
 
 // Type guard for reasoning parts - works across all providers
 const isReasoningPart = (part: MessagePart): part is ReasoningPart => {
@@ -90,9 +82,7 @@ type StatusIndicatorState = {
   metadata?: string;
 };
 
-const getIndicatorState = (
-  messages: ChatMessageType[],
-): StatusIndicatorState => {
+const getIndicatorState = (messages: ChatMessageType[]): StatusIndicatorState => {
   const lastMsg = messages[messages.length - 1];
   if (!lastMsg || lastMsg.role !== "assistant") {
     return {
@@ -105,13 +95,10 @@ const getIndicatorState = (
   for (const part of lastMsg.parts ?? []) {
     // Tool detection - prioritize over reasoning
     if (isToolUIPart(part) && TOOL_ACTIVE_STATES.includes(part.state)) {
-      const toolName = part.type.startsWith("tool-")
-        ? part.type.slice(5)
-        : "tool";
+      const toolName = part.type.startsWith("tool-") ? part.type.slice(5) : "tool";
 
       const isWebSearch =
-        toolName.toLowerCase().includes("websearch") ||
-        toolName.toLowerCase().includes("web");
+        toolName.toLowerCase().includes("websearch") || toolName.toLowerCase().includes("web");
 
       const isPricingSearch = toolName.toLowerCase().includes("pricingcalc");
       const isLiveUrlCrawling = toolName.toLowerCase().includes("urlcrawler");
@@ -200,16 +187,13 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
 
   const filteredMessages = messages.filter(isUserOrAssistant);
 
-  const lastUserMessageIndex = filteredMessages.reduce(
-    (lastIndex, msg, index) => {
-      return msg.role === "user" ? index : lastIndex;
-    },
-    -1,
-  );
+  const lastUserMessageIndex = filteredMessages.reduce((lastIndex, msg, index) => {
+    return msg.role === "user" ? index : lastIndex;
+  }, -1);
 
   return (
-    <Conversation className="w-full h-full flex-1 relative">
-      <ConversationContent className="flex flex-col pt-9 lg:pt-0 w-full">
+    <Conversation className="relative h-full w-full flex-1">
+      <ConversationContent className="flex w-full flex-col pt-9 lg:pt-0">
         {filteredMessages.map((msg, index) => {
           const consolidatedText = msg.parts
             .filter((part) => part.type === "text")
@@ -226,14 +210,11 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
               {msg.role === "user" ? (
                 <MessageBubble msg={msg} />
               ) : (
-                <div className="w-full max-w-[95vw] lg:max-w-[55vw] box-border mx-auto">
+                <div className="mx-auto box-border w-full max-w-[95vw] lg:max-w-[55vw]">
                   <Message from={msg.role}>
                     <MessageContent>
                       {consolidatedText.trim() && (
-                        <Response
-                          shikiTheme={["one-light", "ayu-dark"]}
-                          key={`${msg.id}-response`}
-                        >
+                        <Response shikiTheme={["one-light", "ayu-dark"]} key={`${msg.id}-response`}>
                           {consolidatedText}
                         </Response>
                       )}
@@ -244,15 +225,10 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
 
               {/* Clean indicator - no reasoning text */}
               {shouldShowIndicator && index === lastUserMessageIndex && (
-                <div className="mx-auto max-w-[95vw] lg:max-w-[55vw] px-7">
-                  <div
-                    className="bg-background/50 border-2 border-input gap-3 p-3 px-4 rounded-none shadow-sm
-
-
-                   shadow-background/50 text-sm w-fit"
-                  >
+                <div className="mx-auto max-w-[95vw] px-7 lg:max-w-[55vw]">
+                  <div className="w-fit gap-3 rounded-none border-2 border-input bg-background/50 p-3 px-4 text-sm shadow-background/50 shadow-sm">
                     <div className="flex items-center gap-2">
-                      <indicatorState.Icon className="size-5 animate-pulse flex-shrink-0" />
+                      <indicatorState.Icon className="size-5 flex-shrink-0 animate-pulse" />
                       <Shimmer>{indicatorState.label}</Shimmer>
                     </div>
                   </div>
@@ -262,8 +238,8 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
           );
         })}
         {error && (
-          <div className="mx-auto w-full max-w-[95vw] lg:max-w-[60vw] p-7">
-            <div className="text-red-500 text-3xl">Error</div>
+          <div className="mx-auto w-full max-w-[95vw] p-7 lg:max-w-[60vw]">
+            <div className="text-3xl text-red-500">Error</div>
           </div>
         )}
       </ConversationContent>

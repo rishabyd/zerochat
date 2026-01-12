@@ -1,14 +1,14 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "motion/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function InputBoxSkeleton() {
   return (
     <motion.div
       transition={{ duration: 0.2 }}
       layout
-      className="w-[96vw] origin-center rounded-none lg:max-w-[50vw] mx-auto shadow-md shadow-background/50 h-fit flex p-2 gap-2 border-2  bg-sidebar"
+      className="mx-auto flex h-fit w-[96vw] origin-center gap-2 rounded-none border-2 bg-sidebar p-2 shadow-background/50 shadow-md lg:max-w-[50vw]"
     >
-      <Skeleton className="w-full h-full min-h-11 px-2 rounded-none" />
+      <Skeleton className="h-full min-h-11 w-full rounded-none px-2" />
     </motion.div>
   );
 }

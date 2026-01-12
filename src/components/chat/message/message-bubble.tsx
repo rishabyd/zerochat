@@ -1,14 +1,14 @@
 "use client";
 
+import type { UIDataTypes, UIMessage, UITools } from "ai";
+import { motion } from "motion/react";
+import { useMemo, useState } from "react";
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import { Response } from "@/components/ai-elements/response";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { UIDataTypes, UIMessage, UITools } from "ai";
-import { motion } from "motion/react";
-import { useMemo, useState } from "react";
 
-const MOBILE_BREAKPOINT = 768; // Mobile breakpoint in pixels
+const _MOBILE_BREAKPOINT = 768; // Mobile breakpoint in pixels
 
 // Type definitions for message handling
 type AllowedUIMessage = UIMessage<unknown, UIDataTypes, UITools> & {
@@ -53,7 +53,7 @@ export default function MessageBubble({ msg }: MessageBubbleProps) {
         duration: 0.3,
         ease: "easeInOut",
       }}
-      className="w-full max-w-[95vw] lg:max-w-[55vw] box-border mx-auto mb-4"
+      className="mx-auto mb-4 box-border w-full max-w-[95vw] lg:max-w-[55vw]"
     >
       <Message from={msg.role}>
         <MessageContent>
@@ -73,7 +73,7 @@ export default function MessageBubble({ msg }: MessageBubbleProps) {
                     onClick={() => setIsExpanded(!isExpanded)}
                     variant="secondary"
                     size="sm"
-                    className="cursor-pointer mt-2 mx-auto text-xs rounded-none border transition-colors"
+                    className="mx-auto mt-2 cursor-pointer rounded-none border text-xs transition-colors"
                   >
                     {isExpanded ? "Show less" : "Show more"}
                   </Button>

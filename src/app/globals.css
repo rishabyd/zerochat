@@ -222,7 +222,7 @@
 }
 
 .prose pre {
-  background: hsl(var(--card)) !important;
+  background: hsl(var(--card));
   color: hsl(var(--card-foreground));
   border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
@@ -239,7 +239,7 @@
 /* Remove Tailwind Typography backticks around inline code */
 .prose :not(pre) > code::before,
 .prose :not(pre) > code::after {
-  content: none !important;
+  content: none;
 }
 
 .prose .code-header button,
@@ -290,7 +290,7 @@
   margin: 0;
   border: 0;
   border-radius: 0;
-  background: hsl(var(--card)) !important;
+  background: hsl(var(--card));
   color: hsl(var(--card-foreground));
 }
 
@@ -312,9 +312,9 @@
 }
 
 .prose [data-streamdown="table-wrapper"] table {
-  width: 100% !important;
-  table-layout: fixed !important;
-  border-collapse: collapse !important;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
   border: 1px solid hsl(var(--border));
 }
 
@@ -429,18 +429,18 @@
   body,
   #__next,
   main {
-    overflow: hidden !important;
-    height: 100% !important;
-    max-height: 100vh !important;
+    overflow: hidden;
+    height: 100%;
+    max-height: 100vh;
   }
 
   /* Hide all scrollbars */
   * {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   *::-webkit-scrollbar {
-    display: none !important;
+    display: none;
   }
 }

@@ -1,36 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { signIn } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 export default function SignIn() {
   const [loading, setLoading] = useState(false);
 
   return (
-    <div className="size-full flex justify-center items-center">
-      <Card className="lg:w-sm w-xs  ">
+    <div className="flex size-full items-center justify-center">
+      <Card className="w-xs lg:w-sm">
         <CardHeader className="">
-          <CardTitle className="text-lg font-mono  lg:text-2xl text-center">
-            ZeroChat
-          </CardTitle>
+          <CardTitle className="text-center font-mono text-lg lg:text-2xl">ZeroChat</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            <div
-              className={cn(
-                "w-full gap-2 flex items-center",
-                "justify-between flex-col",
-              )}
-            >
+            <div className={cn("flex w-full items-center gap-2", "flex-col justify-between")}>
               <Button
                 variant="outline"
                 size={"lg"}
@@ -43,10 +30,10 @@ export default function SignIn() {
                       callbackURL: "/",
                     },
                     {
-                      onRequest: (ctx) => {
+                      onRequest: (_ctx) => {
                         setLoading(true);
                       },
-                      onResponse: (ctx) => {
+                      onResponse: (_ctx) => {
                         setLoading(false);
                       },
                     },

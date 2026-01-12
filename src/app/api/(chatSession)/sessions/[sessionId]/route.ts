@@ -1,24 +1,17 @@
-import { getSession } from "@/lib/services/user-sessions";
-import { auth } from "@/lib/auth";
-import { UIDataTypes, UIMessage, UITools } from "ai";
+import type { UIDataTypes, UIMessage, UITools } from "ai";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/services/user-sessions";
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ sessionId: string }> }) {
   try {
     const authSession = await auth.api.getSession({ headers: await headers() });
     const userId = authSession?.user.id;
-    if (!userId)
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const { sessionId } = await params;
     if (!sessionId) {
-      return Response.json(
-        { error: "Session ID is required" },
-        { status: 400 }
-      );
+      return Response.json({ error: "Session ID is required" }, { status: 400 });
     }
 
     const chatSession = await getSession(userId, sessionId);
@@ -43,14 +36,11 @@ export async function GET(
         {
           error: "Chat is currently under maintenance. Please try again later.",
         },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
     console.error("Failed to retrieve session history:", error);
-    return Response.json(
-      { error: "Failed to retrieve session history" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Failed to retrieve session history" }, { status: 500 });
   }
 }

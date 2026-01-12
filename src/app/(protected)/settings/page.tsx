@@ -1,20 +1,14 @@
 "use client";
+import { Palette, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { SaveCustomInstructions } from "@/lib/actions/user-actions";
-import { Palette, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 export default function SettingsPage() {
   const [customInstructions, setCustomInstructions] = useState("");
@@ -56,14 +50,12 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container max-w-3xl mx-auto py-8 px-4 md:px-6 h-full overflow-y-auto">
+    <div className="container mx-auto h-full max-w-3xl overflow-y-auto px-4 py-8 md:px-6">
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground mt-2">
-            Customize your chat experience
-          </p>
+          <h1 className="font-bold text-3xl tracking-tight">Settings</h1>
+          <p className="mt-2 text-muted-foreground">Customize your chat experience</p>
         </div>
 
         <Separator />
@@ -86,9 +78,7 @@ export default function SettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Theme</CardTitle>
-                <CardDescription>
-                  Choose your preferred theme mode
-                </CardDescription>
+                <CardDescription>Choose your preferred theme mode</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3">
@@ -104,9 +94,7 @@ export default function SettingsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Custom Instructions</CardTitle>
-                  <CardDescription>
-                    Tell the AI how you like it to respond
-                  </CardDescription>
+                  <CardDescription>Tell the AI how you like it to respond</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -119,7 +107,7 @@ export default function SettingsPage() {
                       onChange={(e) => setCustomInstructions(e.target.value)}
                       disabled={isLoading}
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       This helps the AI provide more relevant responses
                     </p>
                   </div>

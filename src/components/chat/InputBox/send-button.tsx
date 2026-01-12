@@ -1,5 +1,5 @@
+import type React from "react";
 import { Button } from "@/components/ui/button";
-import React from "react";
 
 export default function SendButton({
   className,

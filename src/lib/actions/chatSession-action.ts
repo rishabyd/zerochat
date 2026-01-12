@@ -1,8 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { getServerUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { getServerUserId } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { sanitizeSessionTitle, validateSessionId } from "../utils/sanitize";
 
 // Sync client-created session with database
@@ -56,8 +56,7 @@ export async function SyncClientSession({
       return { success: false, error: "Session access denied" };
     }
 
-    const wasCreated =
-      session.createdAt.getTime() === session.updatedAt.getTime();
+    const wasCreated = session.createdAt.getTime() === session.updatedAt.getTime();
     if (wasCreated) {
       revalidatePath("");
       revalidatePath(`/${session.id}`);
@@ -74,13 +73,7 @@ export async function SyncClientSession({
   }
 }
 
-export async function UpdateSession({
-  sessionId,
-  title,
-}: {
-  sessionId: string;
-  title: string;
-}) {
+export async function UpdateSession({ sessionId, title }: { sessionId: string; title: string }) {
   const userId = await getServerUserId();
   if (!userId) throw new Error("User not authenticated");
 

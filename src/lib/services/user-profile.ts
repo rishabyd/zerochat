@@ -2,9 +2,7 @@ import { prisma } from "@/lib/prisma";
 import type { UnifiedProfile } from "@/lib/types";
 import { getUserCache, setUserCache } from "../redis/userCache";
 
-export async function getCurrentUserProfile(
-  userId: string
-): Promise<UnifiedProfile> {
+export async function getCurrentUserProfile(userId: string): Promise<UnifiedProfile> {
   if (!userId) throw new Error("Unauthorized");
   const cachedProfile = await getUserCache(userId);
   if (cachedProfile) {
@@ -48,13 +46,7 @@ export async function getCustomPrompt({ userId }: { userId: string }) {
   });
   return data?.instructions;
 }
-export async function saveCustomPrompt({
-  userId,
-  text,
-}: {
-  userId: string;
-  text: string;
-}) {
+export async function saveCustomPrompt({ userId, text }: { userId: string; text: string }) {
   const data = await prisma.userSettings.upsert({
     where: { userId },
     update: { instructions: text },

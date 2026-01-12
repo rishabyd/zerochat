@@ -1,12 +1,13 @@
 "use client";
 
+import { Forward, Globe, Sparkles, SquareDashed } from "lucide-react";
+import { motion } from "motion/react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
+import TextareaAutosize from "react-textarea-autosize";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle"; // Changed from Switch to Toggle
 import { SyncClientSession } from "@/lib/actions/chatSession-action";
 import { useChatStore } from "@/lib/store/useChatStore";
@@ -14,12 +15,6 @@ import { usePayloadStore } from "@/lib/store/usePayloadStore";
 import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
 import { generateClientSessionId, isValidSessionId } from "@/lib/utils";
 import { sanitizeText } from "@/lib/utils/sanitize";
-import { Forward, Globe, Sparkles, SquareDashed } from "lucide-react";
-import { motion } from "motion/react";
-import { usePathname, useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
-import TextareaAutosize from "react-textarea-autosize";
-import { toast } from "sonner";
 import { InputBoxSkeleton } from "./input-box-skeleton";
 import SendButton from "./send-button";
 
@@ -59,10 +54,7 @@ function MainInputBox({
   stopResponse,
   disabled = false,
 }: {
-  sendMessage?: (
-    message: { text: string },
-    options?: { body?: Record<string, unknown> },
-  ) => void;
+  sendMessage?: (message: { text: string }, options?: { body?: Record<string, unknown> }) => void;
   status?: string;
   stopResponse?: () => void;
   disabled?: boolean;
@@ -98,7 +90,7 @@ function MainInputBox({
 
   useEffect(() => {
     setIsNavigating(false);
-  }, [path]);
+  }, []);
 
   useEffect(() => {
     if (selectedModel !== globalModel) {
@@ -109,8 +101,7 @@ function MainInputBox({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!isReady || isNavigating || disabled || prompt.trim().length === 0)
-        return;
+      if (!isReady || isNavigating || disabled || prompt.trim().length === 0) return;
 
       // Prepare body options including Web Search toggle
       const messageOptions = {
@@ -151,7 +142,7 @@ function MainInputBox({
           SyncClientSession({ sessionId: clientSessionId, title }).catch(() => {
             toast.info("Background sync failed!");
           });
-        } catch (error) {
+        } catch (_error) {
           toast.error("Failed to create chat session");
           setIsNavigating(false);
         }
@@ -198,31 +189,25 @@ function MainInputBox({
     return <InputBoxSkeleton />;
   }
 
-  const placeholderText = disabled
-    ? "Chat is currently unavailable"
-    : "Ask anything...";
+  const placeholderText = disabled ? "Chat is currently unavailable" : "Ask anything...";
 
   // Helper to get the display label
-  const activeModelLabel =
-    MODELS.find((m) => m.value === selectedModel)?.label || selectedModel;
+  const activeModelLabel = MODELS.find((m) => m.value === selectedModel)?.label || selectedModel;
 
   return (
     <motion.form
       transition={{ duration: 0.2 }}
       layout
       onSubmit={handleSubmit}
-      className={`w-[96vw] origin-center lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
-                  h-fit flex p-2 gap-2 border-2 items-center bg-sidebar ${
-                    disabled ? "cursor-not-allowed" : ""
-                  }`}
+      className={`mx-auto flex h-fit w-[96vw] origin-center items-center gap-2 border-2 bg-sidebar p-2 shadow-background/50 shadow-md lg:max-w-[50vw] ${
+        disabled ? "cursor-not-allowed" : ""
+      }`}
     >
       <TextareaAutosize
         placeholder={placeholderText}
         autoFocus={!disabled}
         onKeyDown={handleKeyDown}
-        className="w-full h-full scrollbar-thumb-accent scrollbar-thin border-0 resize-none max-h-40
-                   placeholder:opacity-70 placeholder:text-primary bg-transparent min-h-11 px-2 pl-3
-                   place-content-center leading-tight focus:outline-none focus-visible:ring-0"
+        className="scrollbar-thumb-accent scrollbar-thin h-full max-h-40 min-h-11 w-full resize-none place-content-center border-0 bg-transparent px-2 pl-3 leading-tight placeholder:text-primary placeholder:opacity-70 focus:outline-none focus-visible:ring-0"
         value={prompt}
         onChange={(e) => !disabled && setPrompt(e.target.value)}
         maxRows={6}
@@ -237,7 +222,7 @@ function MainInputBox({
           onValueChange={(value: ModelValue) => setSelectedModel(value)}
           disabled={disabled}
         >
-          <SelectTrigger className="h-10 border-2 rounded-none cursor-pointer min-w-[140px] px-3 font-medium text-sm">
+          <SelectTrigger className="h-10 min-w-[140px] cursor-pointer rounded-none border-2 px-3 font-medium text-sm">
             <span className="truncate">{activeModelLabel}</span>
           </SelectTrigger>
           <SelectContent className="border-2 bg-background/70 backdrop-blur-lg">
@@ -245,7 +230,7 @@ function MainInputBox({
               <SelectItem
                 key={model.value}
                 value={model.value}
-                className="cursor-pointer hover:bg-accent/30 rounded-none"
+                className="cursor-pointer rounded-none hover:bg-accent/30"
               >
                 <div className="flex items-center gap-2">
                   <model.icon className="size-4" />
@@ -258,18 +243,16 @@ function MainInputBox({
       </div>
 
       {/* Web Toggle Button */}
-      <div className="flex items-center h-full">
+      <div className="flex h-full items-center">
         <Toggle
           pressed={globalWebSearch}
           onPressedChange={setGlobalWebSearch}
           disabled={disabled}
           variant="outline"
           aria-label="Toggle Web Search"
-          className={` cursor-pointer `}
+          className={`cursor-pointer`}
         >
-          <Globe
-            className={`size-5 ${globalWebSearch ? "text-blue-600 " : ""}`}
-          />
+          <Globe className={`size-5 ${globalWebSearch ? "text-blue-600" : ""}`} />
         </Toggle>
       </div>
 
@@ -282,11 +265,10 @@ function MainInputBox({
       >
         {isReady ? (
           <SendButton
-            className="hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-10 cursor-pointer !border-2"
+            className="!h-10 !border-2 cursor-pointer duration-300 hover:shadow-foreground/5 hover:shadow-sm disabled:opacity-100"
             props={{
               type: "submit",
-              disabled:
-                !isReady || prompt.length === 0 || isNavigating || disabled,
+              disabled: !isReady || prompt.length === 0 || isNavigating || disabled,
             }}
           >
             <Forward className="size-6 text-blue-700" />
@@ -294,8 +276,7 @@ function MainInputBox({
         ) : (
           <Button
             variant="outline"
-            className="hover:text-red-600 bg-accent border-2 h-10 text-white
-                        hover:bg-red-500 cursor-pointer hover:scale-105 duration-300"
+            className="h-10 cursor-pointer border-2 bg-accent text-white duration-300 hover:scale-105 hover:bg-red-500 hover:text-red-600"
             onClick={handleStop}
             disabled={disabled}
           >

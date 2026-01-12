@@ -1,5 +1,5 @@
-import type { UnifiedProfile } from "@/lib/types";
 import { create } from "zustand";
+import type { UnifiedProfile } from "@/lib/types";
 
 interface UserProfileStore {
   profile: UnifiedProfile | null;
@@ -34,8 +34,7 @@ export const useUserProfileStore = create<UserProfileStore>((set, _get) => ({
       set({ profile: data as UnifiedProfile, isLoading: false });
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to fetch profile",
+        error: error instanceof Error ? error.message : "Failed to fetch profile",
         isLoading: false,
       });
     }

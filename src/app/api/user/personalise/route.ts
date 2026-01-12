@@ -1,7 +1,7 @@
+import { NextResponse } from "next/server";
 import { getServerUserId } from "@/lib/auth";
 import { toErrorResponse } from "@/lib/services/errors";
 import { getCustomPrompt } from "@/lib/services/user-profile";
-import { NextResponse } from "next/server";
 
 export async function GET() {
   try {

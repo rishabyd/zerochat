@@ -17,11 +17,7 @@ export function AuthButton() {
         </div>
       ) : (
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => signIn.social({ provider: "google" })}
-          >
+          <Button size="sm" variant="outline" onClick={() => signIn.social({ provider: "google" })}>
             Sign in with Google
           </Button>
         </div>
