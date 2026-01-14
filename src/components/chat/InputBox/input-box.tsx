@@ -7,7 +7,12 @@ import React, { useCallback, useEffect, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle"; // Changed from Switch to Toggle
 import { SyncClientSession } from "@/lib/actions/chatSession-action";
 import { useChatStore } from "@/lib/store/useChatStore";
@@ -54,7 +59,10 @@ function MainInputBox({
   stopResponse,
   disabled = false,
 }: {
-  sendMessage?: (message: { text: string }, options?: { body?: Record<string, unknown> }) => void;
+  sendMessage?: (
+    message: { text: string },
+    options?: { body?: Record<string, unknown> },
+  ) => void;
   status?: string;
   stopResponse?: () => void;
   disabled?: boolean;
@@ -101,7 +109,8 @@ function MainInputBox({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!isReady || isNavigating || disabled || prompt.trim().length === 0) return;
+      if (!isReady || isNavigating || disabled || prompt.trim().length === 0)
+        return;
 
       // Prepare body options including Web Search toggle
       const messageOptions = {
@@ -189,10 +198,13 @@ function MainInputBox({
     return <InputBoxSkeleton />;
   }
 
-  const placeholderText = disabled ? "Chat is currently unavailable" : "Ask anything...";
+  const placeholderText = disabled
+    ? "Chat is currently unavailable"
+    : "Ask anything...";
 
   // Helper to get the display label
-  const activeModelLabel = MODELS.find((m) => m.value === selectedModel)?.label || selectedModel;
+  const activeModelLabel =
+    MODELS.find((m) => m.value === selectedModel)?.label || selectedModel;
 
   return (
     <motion.form
@@ -252,7 +264,9 @@ function MainInputBox({
           aria-label="Toggle Web Search"
           className={`cursor-pointer`}
         >
-          <Globe className={`size-5 ${globalWebSearch ? "text-blue-600" : ""}`} />
+          <Globe
+            className={`size-5 ${globalWebSearch ? "text-blue-600" : ""}`}
+          />
         </Toggle>
       </div>
 
@@ -268,7 +282,8 @@ function MainInputBox({
             className="!h-10 !border-2 cursor-pointer duration-300 hover:shadow-foreground/5 hover:shadow-sm disabled:opacity-100"
             props={{
               type: "submit",
-              disabled: !isReady || prompt.length === 0 || isNavigating || disabled,
+              disabled:
+                !isReady || prompt.length === 0 || isNavigating || disabled,
             }}
           >
             <Forward className="size-6 text-blue-700" />

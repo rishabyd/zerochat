@@ -1,5 +1,7 @@
-import { vertex } from "@ai-sdk/google-vertex";
+// import { vertex } from "@ai-sdk/google-vertex";
 import type { UIDataTypes, UIMessage, UITools } from "ai";
+import { webSearch } from "@/lib/tools/web-search-tool";
+
 import {
   consumeStream,
   convertToModelMessages,
@@ -222,10 +224,17 @@ export async function POST(req: Request) {
           system: `
           These are user preferences/traits-${customData}.
 
-          remember: never use any tool when user is passing greetings or compliments. rest always use tools if needed.`,
+          remember: never use any tool when user is passing greetings or compliments. rest always use tools if needed.
+          search web only one time.
+
+          `,
           model,
 
-          tools: isWebSearch ? webSearch : undefined,
+          tools: isWebSearch
+            ? {
+                webSearch,
+              }
+            : undefined,
           stopWhen: stepCountIs(3),
           toolChoice: isWebSearch ? "auto" : undefined,
           messages: convertToModelMessages(messagesForAI),

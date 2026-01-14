@@ -11,7 +11,7 @@ export const webSearch = tool({
     numResults: z
       .number()
       .min(1)
-      .max(20)
+      .max(10)
       .optional()
       .default(5)
       .describe("Number of results to return"),
@@ -46,7 +46,9 @@ export const webSearch = tool({
         url: result.url,
         publishedDate: result.publishedDate,
         author: result.author,
-        content: result.text ? result.text.slice(0, 1500) : "No text content available",
+        content: result.text
+          ? result.text.slice(0, 1500)
+          : "No text content available",
         highlight: result.highlights?.[0] || null,
       }));
     } catch (err) {
