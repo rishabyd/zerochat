@@ -1,14 +1,17 @@
 'use client';
 
-import { SidebarTrigger } from '@/components/ui/sidebar';
-
 export default function ChatPageHeader() {
   return (
-    <div className="flex-shrink-0 bg-sidebar border-b border-border md:hidden">
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
-          <SidebarTrigger className="p-2 hover:bg-accent rounded-none transition-colors" />
-        </div>
+    <div className="flex-shrink-0 bg-transparent">
+      <div className="flex items-center justify-center px-4 py-3">
+        <a
+          href="https://github.com/rishabyd/zerochat"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xl font-semibold hover:underline"
+        >
+          ZeroChat
+        </a>
       </div>
     </div>
   );

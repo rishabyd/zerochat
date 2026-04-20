@@ -143,6 +143,11 @@
     height: 100%;
     @apply bg-background text-foreground;
   }
+  button,
+  [role="button"],
+  a {
+    cursor: pointer;
+  }
 }
 
 /* Cross-browser custom scrollbar for conversation */

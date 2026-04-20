@@ -242,13 +242,13 @@ function MainInputBox({
         >
           {agentMode ? (
             <div className="flex px-1 gap-1 items-center">
-              <Frame className="size-5 text-purple-500" />
-              <span className="text-sm text-purple-500 font-medium">Agent</span>
+              <Frame className="size-5" />
+              <span className="text-sm font-medium">Agent</span>
             </div>
           ) : (
             <div className="flex px-1 gap-1 items-center">
-              <MessageCircleMore className="size-5 text-blue-500" />
-              <span className="text-sm text-blue-500 font-medium">Chat</span>
+              <MessageCircleMore className="size-5" />
+              <span className="text-sm font-medium">Chat</span>
             </div>
           )}
         </Toggle>
@@ -293,13 +293,13 @@ function MainInputBox({
               disabled: !isReady || prompt.length === 0 || isNavigating || disabled,
             }}
           >
-            <Forward className="size-6 text-blue-700" />
+            <Forward className="size-6" />
           </SendButton>
         ) : (
           <Button
             variant="outline"
-            className="hover:text-red-600 bg-accent border-2 h-full text-white
-                       hover:bg-red-500  cursor-pointer hover:scale-105 duration-300"
+            className="bg-accent border-2 h-full text-accent-foreground
+                       hover:bg-destructive cursor-pointer hover:scale-105 duration-300"
             onClick={handleStop}
             disabled={disabled}
           >

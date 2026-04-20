@@ -13,7 +13,11 @@ export default function SignIn() {
     <div className="size-full flex justify-center items-center">
       <Card className="lg:w-sm w-xs  ">
         <CardHeader className="">
-          <CardTitle className="text-lg font-mono  lg:text-2xl text-center">ZeroChat</CardTitle>
+          <CardTitle className="text-lg font-mono  lg:text-2xl text-center">
+            <a href="https://github.com/rishabyd/zerochat" target="_blank" rel="noopener noreferrer" className="hover:underline">
+              ZeroChat
+            </a>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">

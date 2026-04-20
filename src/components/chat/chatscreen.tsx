@@ -146,7 +146,7 @@ function ChatPage({
               <h1 className="text-sm font-medium truncate">Chat Session</h1>
               {isClientSession && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-none animate-pulse"></div>
+                  <div className="w-1.5 h-1.5 bg-foreground rounded-none animate-pulse"></div>
                   <span>Syncing...</span>
                 </div>
               )}
