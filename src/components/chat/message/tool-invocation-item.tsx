@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Tool,
@@ -6,19 +6,19 @@ import {
   ToolHeader,
   ToolInput,
   ToolOutput,
-} from "@/components/ai-elements/tool";
-import { cn } from "@/lib/utils";
-import type { ToolUIPart } from "ai";
-import { memo, useMemo } from "react";
+} from '@/components/ai-elements/tool';
+import { cn } from '@/lib/utils';
+import type { ToolUIPart } from 'ai';
+import { memo, useMemo } from 'react';
 
 export const getToolDisplayName = (part: ToolUIPart) => {
-  return (part as { toolName?: string }).toolName ?? part.type.replace(/^tool-/, "");
+  return (part as { toolName?: string }).toolName ?? part.type.replace(/^tool-/, '');
 };
 
 const renderStructuredValue = (value: unknown) => {
   if (value === null || value === undefined) return null;
 
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return (
       <pre className="max-h-60 overflow-y-auto overscroll-contain whitespace-pre-wrap break-words rounded-md bg-muted/50 p-3 font-mono text-xs">
         {value}
@@ -26,11 +26,9 @@ const renderStructuredValue = (value: unknown) => {
     );
   }
 
-  if (typeof value === "number" || typeof value === "boolean") {
+  if (typeof value === 'number' || typeof value === 'boolean') {
     return (
-      <span className="rounded-md bg-muted/50 px-2 py-1 font-mono text-xs">
-        {String(value)}
-      </span>
+      <span className="rounded-md bg-muted/50 px-2 py-1 font-mono text-xs">{String(value)}</span>
     );
   }
 
@@ -41,9 +39,7 @@ const renderStructuredValue = (value: unknown) => {
       </pre>
     );
   } catch (error) {
-    return (
-      <span className="text-sm text-muted-foreground">{String(value)}</span>
-    );
+    return <span className="text-sm text-muted-foreground">{String(value)}</span>;
   }
 };
 
@@ -60,15 +56,14 @@ const ToolInvocationItem = memo(({ part }: ToolInvocationItemProps) => {
   return (
     <Tool
       defaultOpen={
-        part.state === "input-streaming" ||
-        part.state === "input-available" ||
-        part.state === "output-error"
+        part.state === 'input-streaming' ||
+        part.state === 'input-available' ||
+        part.state === 'output-error'
       }
       className="bg-background/60"
     >
       <ToolHeader state={part.state} type={part.type} label={displayName} />
-      <ToolContent className={cn("border-t border-border/60")}
-      >
+      <ToolContent className={cn('border-t border-border/60')}>
         {shouldShowInput && <ToolInput input={part.input} />}
         {hasResult ? (
           <ToolOutput errorText={part.errorText} output={outputNode} />
@@ -82,7 +77,6 @@ const ToolInvocationItem = memo(({ part }: ToolInvocationItemProps) => {
   );
 });
 
-ToolInvocationItem.displayName = "ToolInvocationItem";
+ToolInvocationItem.displayName = 'ToolInvocationItem';
 
 export default ToolInvocationItem;
-

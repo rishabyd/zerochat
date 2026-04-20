@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { prisma } from "@/lib/prisma";
-import { getServerUserId } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
-import { sanitizeSessionTitle, validateSessionId } from "../utils/sanitize";
+import { prisma } from '@/lib/prisma';
+import { getServerUserId } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
+import { sanitizeSessionTitle, validateSessionId } from '../utils/sanitize';
 
 // Sync client-created session with database
 type SyncResult = {
@@ -21,14 +21,14 @@ export async function SyncClientSession({
   try {
     const userId = await getServerUserId();
     if (!userId) {
-      return { success: false, error: "User not authenticated" };
+      return { success: false, error: 'User not authenticated' };
     }
 
     const validatedSessionId = validateSessionId(sessionId);
     const sanitizedTitle = sanitizeSessionTitle(title);
 
     if (!validatedSessionId) {
-      return { success: false, error: "Invalid session ID" };
+      return { success: false, error: 'Invalid session ID' };
     }
 
     const session = await prisma.chatSession.upsert({
@@ -53,36 +53,29 @@ export async function SyncClientSession({
     });
 
     if (session.userId !== userId) {
-      return { success: false, error: "Session access denied" };
+      return { success: false, error: 'Session access denied' };
     }
 
-    const wasCreated =
-      session.createdAt.getTime() === session.updatedAt.getTime();
+    const wasCreated = session.createdAt.getTime() === session.updatedAt.getTime();
     if (wasCreated) {
-      revalidatePath("");
+      revalidatePath('');
       revalidatePath(`/${session.id}`);
     }
 
     return { success: true };
   } catch (error) {
-    console.error("[SyncClientSession] Error:", {
+    console.error('[SyncClientSession] Error:', {
       sessionId,
       error: error instanceof Error ? error.message : String(error),
     });
 
-    return { success: false, error: "Failed to sync session" };
+    return { success: false, error: 'Failed to sync session' };
   }
 }
 
-export async function UpdateSession({
-  sessionId,
-  title,
-}: {
-  sessionId: string;
-  title: string;
-}) {
+export async function UpdateSession({ sessionId, title }: { sessionId: string; title: string }) {
   const userId = await getServerUserId();
-  if (!userId) throw new Error("User not authenticated");
+  if (!userId) throw new Error('User not authenticated');
 
   try {
     // Validate and sanitize inputs
@@ -102,13 +95,13 @@ export async function UpdateSession({
     if (error instanceof Error) {
       throw new Error(error.message);
     }
-    throw new Error("Session not found or not authorised to update");
+    throw new Error('Session not found or not authorised to update');
   }
 }
 
 export async function DeleteSession({ sessionId }: { sessionId: string }) {
   const userId = await getServerUserId();
-  if (!userId) throw new Error("User not authenticated");
+  if (!userId) throw new Error('User not authenticated');
 
   try {
     // Validate session ID
@@ -126,6 +119,6 @@ export async function DeleteSession({ sessionId }: { sessionId: string }) {
     if (error instanceof Error) {
       throw new Error(error.message);
     }
-    throw new Error("Session not found or not authorised to delete");
+    throw new Error('Session not found or not authorised to delete');
   }
 }

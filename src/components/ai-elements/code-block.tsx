@@ -1,22 +1,19 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { CheckIcon, CopyIcon } from "lucide-react";
-import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
-import { createContext, useContext, useState } from "react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  oneDark,
-  oneLight,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { CheckIcon, CopyIcon } from 'lucide-react';
+import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
+import { createContext, useContext, useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 type CodeBlockContextType = {
   code: string;
 };
 
 const CodeBlockContext = createContext<CodeBlockContextType>({
-  code: "",
+  code: '',
 });
 
 export type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
@@ -37,16 +34,13 @@ export const CodeBlock = ({
   <CodeBlockContext.Provider value={{ code }}>
     <div
       data-code-block-container="true"
-      className={cn(
-        "my-4 w-full overflow-hidden rounded-none border",
-        className
-      )}
+      className={cn('my-4 w-full overflow-hidden rounded-none border', className)}
       {...props}
     >
       <div className="relative">
         <div
           className="code-header flex items-center justify-between gap-2 px-3 py-1.5"
-          style={{ background: "hsl(var(--card))" }}
+          style={{ background: 'hsl(var(--card))' }}
         >
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             {language}
@@ -56,20 +50,20 @@ export const CodeBlock = ({
         <SyntaxHighlighter
           className="overflow-hidden dark:hidden border-0 rounded-t-none"
           codeTagProps={{
-            className: "font-mono text-[0.95rem]",
+            className: 'font-mono text-[0.95rem]',
           }}
           customStyle={{
             margin: 0,
-            padding: "1rem",
-            fontSize: "0.95rem",
-            background: "hsl(var(--card))",
-            color: "hsl(var(--card-foreground))",
+            padding: '1rem',
+            fontSize: '0.95rem',
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--card-foreground))',
           }}
           language={language}
           lineNumberStyle={{
-            color: "hsl(var(--muted-foreground))",
-            paddingRight: "1rem",
-            minWidth: "2.5rem",
+            color: 'hsl(var(--muted-foreground))',
+            paddingRight: '1rem',
+            minWidth: '2.5rem',
           }}
           showLineNumbers={showLineNumbers}
           style={oneLight}
@@ -79,20 +73,20 @@ export const CodeBlock = ({
         <SyntaxHighlighter
           className="hidden overflow-hidden dark:block border-0 rounded-t-none"
           codeTagProps={{
-            className: "font-mono text-[0.95rem]",
+            className: 'font-mono text-[0.95rem]',
           }}
           customStyle={{
             margin: 0,
-            padding: "1rem",
-            fontSize: "0.95rem",
-            background: "hsl(var(--card))",
-            color: "hsl(var(--card-foreground))",
+            padding: '1rem',
+            fontSize: '0.95rem',
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--card-foreground))',
           }}
           language={language}
           lineNumberStyle={{
-            color: "hsl(var(--muted-foreground))",
-            paddingRight: "1rem",
-            minWidth: "2.5rem",
+            color: 'hsl(var(--muted-foreground))',
+            paddingRight: '1rem',
+            minWidth: '2.5rem',
           }}
           showLineNumbers={showLineNumbers}
           style={oneDark}
@@ -122,8 +116,8 @@ export const CodeBlockCopyButton = ({
   const { code } = useContext(CodeBlockContext);
 
   const copyToClipboard = async () => {
-    if (typeof window === "undefined" || !navigator.clipboard.writeText) {
-      onError?.(new Error("Clipboard API not available"));
+    if (typeof window === 'undefined' || !navigator.clipboard.writeText) {
+      onError?.(new Error('Clipboard API not available'));
       return;
     }
 
@@ -141,7 +135,7 @@ export const CodeBlockCopyButton = ({
 
   return (
     <Button
-      className={cn("shrink-0 h-7 w-7 rounded-none", className)}
+      className={cn('shrink-0 h-7 w-7 rounded-none', className)}
       onClick={copyToClipboard}
       size="icon"
       variant="ghost"

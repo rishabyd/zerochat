@@ -10,7 +10,7 @@ export type payloadType = {
   prompt: string;
   mode?: string;
   model?: string;
-  chatMode?: "agent" | "simple";
+  chatMode?: 'agent' | 'simple';
 };
 
 // Message structure for sending to API
@@ -22,7 +22,7 @@ export type sendMessageType = {
 export interface DbChatMessage {
   id: string;
   sessionId: string;
-  role: "USER" | "AI" | "SYSTEM";
+  role: 'USER' | 'AI' | 'SYSTEM';
   content: string;
   createdAt: Date;
 }

@@ -1,58 +1,47 @@
-"use client";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
-import { Toggle } from "@/components/ui/toggle";
-import { SyncClientSession } from "@/lib/actions/chatSession-action";
-import { useChatStore } from "@/lib/store/useChatStore";
-import { usePayloadStore } from "@/lib/store/usePayloadStore";
-import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
-import { generateClientSessionId, isValidSessionId } from "@/lib/utils";
-import { sanitizeText } from "@/lib/utils/sanitize";
-import {
-  Forward,
-  Frame,
-  MessageCircleMore,
-  Sparkles,
-  SquareDashed,
-} from "lucide-react";
-import { motion } from "motion/react";
-import { usePathname, useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
-import TextareaAutosize from "react-textarea-autosize";
-import { toast } from "sonner";
-import { InputBoxSkeleton } from "./input-box-skeleton";
-import SendButton from "./send-button";
+'use client';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { Toggle } from '@/components/ui/toggle';
+import { SyncClientSession } from '@/lib/actions/chatSession-action';
+import { useChatStore } from '@/lib/store/useChatStore';
+import { usePayloadStore } from '@/lib/store/usePayloadStore';
+import { useUserProfileStore } from '@/lib/store/useUserProfileStore';
+import { generateClientSessionId, isValidSessionId } from '@/lib/utils';
+import { sanitizeText } from '@/lib/utils/sanitize';
+import { Forward, Frame, MessageCircleMore, Sparkles, SquareDashed } from 'lucide-react';
+import { motion } from 'motion/react';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useCallback, useEffect, useState } from 'react';
+import TextareaAutosize from 'react-textarea-autosize';
+import { toast } from 'sonner';
+import { InputBoxSkeleton } from './input-box-skeleton';
+import SendButton from './send-button';
 
 const MODELS = [
-  { value: "auto", label: "Auto", icon: Sparkles },
+  { value: 'auto', label: 'Auto', icon: Sparkles },
   {
-    value: "anthropic/claude-opus-4.5",
-    label: "Claude Opus 4.5",
+    value: 'anthropic/claude-opus-4.5',
+    label: 'Claude Opus 4.5',
     icon: Sparkles,
   },
   {
-    value: "anthropic/claude-sonnet-4.5",
-    label: "Claude Sonnet 4.5",
+    value: 'anthropic/claude-sonnet-4.5',
+    label: 'Claude Sonnet 4.5',
     icon: Sparkles,
   },
   {
-    value: "anthropic/claude-haiku-4.5",
-    label: "Claude Haiku 4.5",
+    value: 'anthropic/claude-haiku-4.5',
+    label: 'Claude Haiku 4.5',
     icon: Sparkles,
   },
   {
-    value: "anthropic/claude-3-haiku",
-    label: "Claude Haiku 3",
+    value: 'anthropic/claude-3-haiku',
+    label: 'Claude Haiku 3',
     icon: Sparkles,
   },
 ] as const;
 
-type ModelValue = (typeof MODELS)[number]["value"];
+type ModelValue = (typeof MODELS)[number]['value'];
 
 function MainInputBox({
   sendMessage,
@@ -61,10 +50,7 @@ function MainInputBox({
   disabled = false,
   loading = false,
 }: {
-  sendMessage?: (
-    message: { text: string },
-    options?: { body?: Record<string, unknown> },
-  ) => void;
+  sendMessage?: (message: { text: string }, options?: { body?: Record<string, unknown> }) => void;
   status?: string;
   stopResponse?: () => void;
   disabled?: boolean;
@@ -86,17 +72,17 @@ function MainInputBox({
   const setGlobalChatMode = usePayloadStore((s) => s.setChatMode);
 
   // Agent mode toggle state - synced with global store
-  const [agentMode, setAgentMode] = useState(globalChatMode === "agent");
+  const [agentMode, setAgentMode] = useState(globalChatMode === 'agent');
 
   // Model selection state - synced with global store
   const [selectedModel, setSelectedModel] = useState<ModelValue>(
-    (globalModel as ModelValue) || "auto",
+    (globalModel as ModelValue) || 'auto'
   );
 
   const profile = useUserProfileStore((s) => s.profile);
   const profileLoading = useUserProfileStore((s) => s.isLoading);
 
-  const isReady = (!status || status === "ready") && !disabled;
+  const isReady = (!status || status === 'ready') && !disabled;
   const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
@@ -105,7 +91,7 @@ function MainInputBox({
 
   // Sync local state with global store whenever they change
   useEffect(() => {
-    const newChatMode = agentMode ? "agent" : "simple";
+    const newChatMode = agentMode ? 'agent' : 'simple';
     if (newChatMode !== globalChatMode) {
       setGlobalChatMode(newChatMode);
     }
@@ -120,18 +106,17 @@ function MainInputBox({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!isReady || isNavigating || disabled || prompt.trim().length === 0)
-        return;
+      if (!isReady || isNavigating || disabled || prompt.trim().length === 0) return;
 
-      if (path === "/") {
+      if (path === '/') {
         setIsNavigating(true);
 
         try {
           const clientSessionId = generateClientSessionId();
-          const title = sanitizeText(prompt.slice(0, 80)) || "New Chat";
+          const title = sanitizeText(prompt.slice(0, 80)) || 'New Chat';
 
           if (!isValidSessionId(clientSessionId)) {
-            toast.error("Invalid session ID generated");
+            toast.error('Invalid session ID generated');
             setIsNavigating(false);
             return;
           }
@@ -153,16 +138,16 @@ function MainInputBox({
             // Small delay to ensure navigation completes
             setTimeout(() => {
               sendMessage({ text: sanitizedPrompt }, messageOptions);
-              setPrompt("");
+              setPrompt('');
             }, 100);
           }
 
           // Background sync - don't await
           SyncClientSession({ sessionId: clientSessionId, title }).catch(() => {
-            toast.info("Background sync failed!");
+            toast.info('Background sync failed!');
           });
         } catch (error) {
-          toast.error("Failed to create chat session");
+          toast.error('Failed to create chat session');
           setIsNavigating(false);
         }
         return;
@@ -177,9 +162,9 @@ function MainInputBox({
               chatMode: globalChatMode,
               model: globalModel, // Always has value, defaults to "auto"
             },
-          },
+          }
         );
-        setPrompt("");
+        setPrompt('');
       }
     },
     [
@@ -194,17 +179,17 @@ function MainInputBox({
       sendMessage,
       globalChatMode,
       globalModel,
-    ],
+    ]
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.ctrlKey) {
+      if (e.key === 'Enter' && !e.ctrlKey) {
         e.preventDefault();
         if (!disabled) handleSubmit(e);
       }
     },
-    [disabled, handleSubmit],
+    [disabled, handleSubmit]
   );
 
   const handleStop = useCallback(() => {
@@ -216,9 +201,7 @@ function MainInputBox({
     return <InputBoxSkeleton />;
   }
 
-  const placeholderText = disabled
-    ? "Chat is currently unavailable"
-    : "Ask anything...";
+  const placeholderText = disabled ? 'Chat is currently unavailable' : 'Ask anything...';
 
   return (
     <motion.form
@@ -227,7 +210,7 @@ function MainInputBox({
       onSubmit={handleSubmit}
       className={`w-[96vw] origin-center  lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
                  h-fit flex p-2 gap-2 border-2 items-center bg-sidebar ${
-                   disabled ? "cursor-not-allowed" : ""
+                   disabled ? 'cursor-not-allowed' : ''
                  }`}
     >
       <TextareaAutosize
@@ -306,9 +289,8 @@ function MainInputBox({
           <SendButton
             className=" hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-full cursor-pointer !border-2"
             props={{
-              type: "submit",
-              disabled:
-                !isReady || prompt.length === 0 || isNavigating || disabled,
+              type: 'submit',
+              disabled: !isReady || prompt.length === 0 || isNavigating || disabled,
             }}
           >
             <Forward className="size-6 text-blue-700" />

@@ -1,4 +1,4 @@
-import { prisma } from "../prisma";
+import { prisma } from '../prisma';
 
 export async function saveUserMessage({
   userId,
@@ -12,13 +12,13 @@ export async function saveUserMessage({
   if (!userId) {
     throw new Error(`userId missing!`);
   }
-  if (!sessionId) throw new Error("sessionId missing");
+  if (!sessionId) throw new Error('sessionId missing');
 
   const message = await prisma.chatMessage.create({
     data: {
       sessionId,
       content: content.trim(),
-      role: "USER",
+      role: 'USER',
       userId,
     },
   });
@@ -39,13 +39,13 @@ export async function saveAiMessage({
   if (!userId) {
     throw new Error(`userId missing!`);
   }
-  if (!sessionId) throw new Error("sessionId missing");
+  if (!sessionId) throw new Error('sessionId missing');
 
   const message = await prisma.chatMessage.create({
     data: {
       sessionId,
       content: content.trim(),
-      role: "AI",
+      role: 'AI',
       userId,
       modelUsed: model,
     },

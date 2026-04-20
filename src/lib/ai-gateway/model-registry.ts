@@ -1,26 +1,20 @@
-import {
-  convertToModelMessages,
-  generateText,
-  UIDataTypes,
-  UIMessage,
-  UITools,
-} from "ai";
-import { getGatewayConfig } from "./provider-options";
+import { convertToModelMessages, generateText, UIDataTypes, UIMessage, UITools } from 'ai';
+import { createGateway } from '@ai-sdk/gateway';
 
 export const AGENT_MODELS: Record<number, string> = {
-  "1": "openai/gpt-oss-120b",
-  "2": "openai/gpt-oss-120b",
-  "3": "openai/gpt-oss-120b",
-  "4": "openai/gpt-oss-120b",
-  "5": "anthropic/claude-3-haiku",
+  '1': 'openai/gpt-oss-120b',
+  '2': 'openai/gpt-oss-120b',
+  '3': 'openai/gpt-oss-120b',
+  '4': 'openai/gpt-oss-120b',
+  '5': 'anthropic/claude-3-haiku',
 };
 
 export const SIMPLE_MODELS: Record<number, string> = {
-  "1": "openai/gpt-oss-120b",
-  "2": "openai/gpt-oss-120b",
-  "3": "openai/gpt-oss-120b",
-  "4": "openai/gpt-oss-120b",
-  "5": "anthropic/claude-3-haiku",
+  '1': 'openai/gpt-oss-120b',
+  '2': 'openai/gpt-oss-120b',
+  '3': 'openai/gpt-oss-120b',
+  '4': 'openai/gpt-oss-120b',
+  '5': 'anthropic/claude-3-haiku',
 };
 
 const system = `You are a cost-efficient query classification router with conversation awareness.
@@ -43,46 +37,42 @@ OUTPUT: Reply with ONLY a single digit number from 1 to 5. Nothing else.`;
 
 export async function GetBestModel(
   currentMessages: UIMessage<unknown, UIDataTypes, UITools>[],
-  chatMode: "agent" | "simple",
+  chatMode: 'agent' | 'simple',
+  apiKey?: string
 ) {
   try {
-    const model = "meta/llama-3.1-8b";
+    const gatewayInstance = createGateway({ apiKey });
+    const model = gatewayInstance('meta/llama-3.1-8b');
     const { text } = await generateText({
       system,
       model,
       temperature: 0,
-      providerOptions: {
-        gateway: getGatewayConfig(model),
-      },
       messages: convertToModelMessages(currentMessages),
     });
 
-    console.log("Router response:", text);
+    console.log('Router response:', text);
 
-    // Extract the first digit from the response
     const match = text.trim().match(/[1-5]/);
     let complexityNum = match ? parseInt(match[0], 10) : 3;
 
-    // Validate complexity range
-    if (isNaN(complexityNum) || complexityNum < 1 || complexityNum > 5) {
+    if (Number.isNaN(complexityNum) || complexityNum < 1 || complexityNum > 5) {
       console.warn(`Invalid complexity: ${complexityNum}, defaulting to 3`);
       complexityNum = 3;
     }
 
-    console.log("Parsed complexity:", complexityNum);
+    console.log('Parsed complexity:', complexityNum);
 
     return {
       autoModel:
-        chatMode === "agent"
+        chatMode === 'agent'
           ? AGENT_MODELS[complexityNum as keyof typeof AGENT_MODELS]
           : SIMPLE_MODELS[complexityNum as keyof typeof SIMPLE_MODELS],
       complexity: complexityNum,
     };
   } catch (error) {
-    console.warn("Text generation failed:", error);
-    // Fallback to default values
+    console.warn('Text generation failed:', error);
     return {
-      autoModel: chatMode === "agent" ? AGENT_MODELS[3] : SIMPLE_MODELS[3],
+      autoModel: chatMode === 'agent' ? AGENT_MODELS[3] : SIMPLE_MODELS[3],
       complexity: 3,
     };
   }

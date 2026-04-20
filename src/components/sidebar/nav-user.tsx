@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,18 +10,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { UnifiedProfile } from "@/lib/types";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { NavUserSkeleton } from "./nav-user-skeleton";
-import { authClient } from "@/lib/auth-client";
+} from '@/components/ui/sidebar';
+import { UnifiedProfile } from '@/lib/types';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { NavUserSkeleton } from './nav-user-skeleton';
+import { authClient } from '@/lib/auth-client';
 
 export function NavUser({
   profile,
@@ -67,7 +67,7 @@ export function NavUser({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56  rounded-none"
-            side={isMobile ? "bottom" : "top"}
+            side={isMobile ? 'bottom' : 'top'}
             align="end"
             sideOffset={4}
           >
@@ -96,7 +96,7 @@ export function NavUser({
                 await authClient.signOut({
                   fetchOptions: {
                     onSuccess: () => {
-                      router.push("/");
+                      router.push('/');
                     },
                   },
                 });

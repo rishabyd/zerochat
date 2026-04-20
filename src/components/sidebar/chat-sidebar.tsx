@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Sidebar,
@@ -9,15 +9,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useSession } from "@/lib/auth-client";
-import { useUserProfileStore } from "@/lib/store/useUserProfileStore";
-import { PlusIcon } from "lucide-react";
-import Link from "next/link";
-import { useEffect } from "react";
-import { NavSessions } from "./nav-sessions";
-import { NavUser } from "./nav-user";
+} from '@/components/ui/sidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useSession } from '@/lib/auth-client';
+import { useUserProfileStore } from '@/lib/store/useUserProfileStore';
+import { PlusIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect } from 'react';
+import { NavSessions } from './nav-sessions';
+import { NavUser } from './nav-user';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data, isPending } = useSession();
@@ -26,9 +26,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const fetchProfile = useUserProfileStore((e) => e.fetchProfile);
   const profile = useUserProfileStore((e) => e.profile);
   const userData = {
-    name: data?.user?.name || data?.user?.email || "User",
-    email: data?.user?.email || "",
-    avatar: data?.user?.image || "/avatars/default.jpg",
+    name: data?.user?.name || data?.user?.email || 'User',
+    email: data?.user?.email || '',
+    avatar: data?.user?.image || '/avatars/default.jpg',
   };
   useEffect(() => {
     if (!profile) {
@@ -42,8 +42,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       variant="inset"
       className={`!border-r-2  shadow-md shadow-background/50 ${
         isMobile
-          ? "fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] lg:relative lg:w-auto  overflow-x-hidden"
-          : ""
+          ? 'fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] lg:relative lg:w-auto  overflow-x-hidden'
+          : ''
       }`}
       {...props}
     >

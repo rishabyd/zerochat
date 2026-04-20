@@ -1,4 +1,4 @@
-import { prisma } from "../prisma";
+import { prisma } from '../prisma';
 
 export async function getSessions(userId: string) {
   if (!userId) {
@@ -15,7 +15,7 @@ export async function getSessions(userId: string) {
       createdAt: true,
       updatedAt: true,
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { updatedAt: 'desc' },
   });
 
   return sessions;
@@ -25,7 +25,7 @@ export async function getSession(userId: string, sessionId: string) {
   if (!userId) {
     throw new Error(`userId missing!`);
   }
-  if (!sessionId) throw new Error("sessionId missing");
+  if (!sessionId) throw new Error('sessionId missing');
 
   const session = await prisma.chatSession.findUnique({
     where: {
@@ -38,7 +38,7 @@ export async function getSession(userId: string, sessionId: string) {
       createdAt: true,
 
       messages: {
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: 'asc' },
         take: 22,
       },
     },

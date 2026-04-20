@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export type AppError = {
   code?: string | number;
@@ -21,13 +21,12 @@ export const useErrorStore = create<ErrorStore>((set) => ({
 
 // Unified helper to derive user-facing toast message
 export function getUserFriendlyError(e: unknown): string {
-  if (!e) return "Unexpected error";
-  if (typeof e === "string") return e;
-  if (e instanceof Error) return e.message || "Unexpected error";
+  if (!e) return 'Unexpected error';
+  if (typeof e === 'string') return e;
+  if (e instanceof Error) return e.message || 'Unexpected error';
   try {
     const obj = e as { message?: string; status?: number };
     if (obj?.message) return obj.message;
   } catch {}
-  return "Unexpected error";
+  return 'Unexpected error';
 }
-

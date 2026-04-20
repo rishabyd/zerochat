@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function ChatPageHeader() {
   return (

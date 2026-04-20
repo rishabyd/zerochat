@@ -1,35 +1,30 @@
-import { tool } from "ai";
-import Exa from "exa-js";
-import { z } from "zod";
+import { tool } from 'ai';
+import Exa from 'exa-js';
+import { z } from 'zod';
 
 export const exa = new Exa(process.env.EXA_API_KEY);
 
 export const webSearch = tool({
-  description: "Search the web for up-to-date information",
+  description: 'Search the web for up-to-date information',
   inputSchema: z.object({
-    query: z.string().min(1).max(100).describe("The search query"),
+    query: z.string().min(1).max(100).describe('The search query'),
     numResults: z
       .number()
       .min(5)
       .max(40)
       .optional()
       .default(10)
-      .describe("Number of results to return"),
+      .describe('Number of results to return'),
   }),
   execute: async ({ query, numResults }) => {
     try {
       const { results } = await exa.searchAndContents(query, {
         numResults,
-        type: "auto",
+        type: 'auto',
         extras: {
           links: 5,
         },
-        excludeSourceDomains: [
-          "reddit.com",
-          "quora.com",
-          "twitter.com",
-          "aljazeera.com",
-        ],
+        excludeSourceDomains: ['reddit.com', 'quora.com', 'twitter.com', 'aljazeera.com'],
       });
 
       if (!results?.length) {
@@ -47,10 +42,8 @@ export const webSearch = tool({
         score: result.score,
       }));
     } catch (err) {
-      console.error("❌ webSearch failed:", err);
-      throw new Error(
-        `Search failed: ${err instanceof Error ? err.message : "Unknown error"}`,
-      );
+      console.error('❌ webSearch failed:', err);
+      throw new Error(`Search failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   },
 });

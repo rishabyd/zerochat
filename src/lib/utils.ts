@@ -1,6 +1,5 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 // Merge Tailwind CSS classes with proper conflict resolution
 export function cn(...inputs: ClassValue[]) {
@@ -25,14 +24,11 @@ export function generateSecureId(): string {
 // Validate session ID format to ensure it's a valid UUID v4
 export function isValidSessionId(sessionId: string): boolean {
   // Type and length checks for basic validation
-  if (typeof sessionId !== "string" || sessionId.length !== 36) {
+  if (typeof sessionId !== 'string' || sessionId.length !== 36) {
     return false;
   }
 
   // Only accept v4 UUIDs for consistency with generator function
-  const uuidV4Regex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidV4Regex.test(sessionId);
 }
-
-

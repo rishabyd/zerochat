@@ -1,51 +1,44 @@
-import { saveMessage } from "@/lib/actions/chat-actions";
-import { GetBestModel } from "@/lib/ai-gateway/model-registry";
-import { getGatewayConfig } from "@/lib/ai-gateway/provider-options";
-import { getServerUserId } from "@/lib/auth";
-import { saveAiMessage, saveUserMessage } from "@/lib/services/user-chat";
-import { getCustomPrompt } from "@/lib/services/user-profile";
-import { getSession } from "@/lib/services/user-sessions";
-import { urlCrawler } from "@/lib/tools/live-crawler";
-import { webSearch } from "@/lib/tools/web-search-tool";
-import type { StreamingError } from "@/lib/types";
-import { generateMessageId } from "@/lib/utils";
-import type { UIDataTypes, UIMessage, UITools } from "ai";
+import { saveMessage } from '@/lib/actions/chat-actions';
+import { GetBestModel } from '@/lib/ai-gateway/model-registry';
+import { createGateway } from '@ai-sdk/gateway';
+import { getServerUserId } from '@/lib/auth';
+import { saveAiMessage, saveUserMessage } from '@/lib/services/user-chat';
+import { getCustomPrompt } from '@/lib/services/user-profile';
+import { getSession } from '@/lib/services/user-sessions';
+import { getUserGatewayKey } from '@/lib/services/user-gateway';
+import { urlCrawler } from '@/lib/tools/live-crawler';
+import { webSearch } from '@/lib/tools/web-search-tool';
+import type { StreamingError } from '@/lib/types';
+import { generateMessageId } from '@/lib/utils';
+import type { UIDataTypes, UIMessage, UITools } from 'ai';
 
-import {
-  consumeStream,
-  convertToModelMessages,
-  smoothStream,
-  stepCountIs,
-  streamText,
-} from "ai";
-import { NextResponse } from "next/server";
+import { consumeStream, convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai';
+import { NextResponse } from 'next/server';
 
-const createAssistantMessage = (
-  content: string,
-): UIMessage<unknown, UIDataTypes, UITools> => ({
+const createAssistantMessage = (content: string): UIMessage<unknown, UIDataTypes, UITools> => ({
   id: generateMessageId(),
-  role: "assistant",
-  parts: [{ type: "text", text: content }],
+  role: 'assistant',
+  parts: [{ type: 'text', text: content }],
 });
 
 const extractText = (m?: UIMessage<unknown, UIDataTypes, UITools>): string =>
   (m?.parts || [])
-    .filter((p) => p.type === "text")
-    .map((p) => String(p.text || ""))
-    .join("\n");
+    .filter((p) => p.type === 'text')
+    .map((p) => String(p.text || ''))
+    .join('\n');
 
 const getErrorMessage = (status: number): string => {
   switch (status) {
     case 429:
-      return "Usage limit reached. Try again later.";
+      return 'Usage limit reached. Try again later.';
     case 400:
-      return "Invalid request or model.";
+      return 'Invalid request or model.';
     case 403:
-      return "Access denied. Check API key/permissions.";
+      return 'Access denied. Check API key/permissions.';
     case 503:
-      return "Service temporarily unavailable due to maintenance.";
+      return 'Service temporarily unavailable due to maintenance.';
     default:
-      return "Unexpected error occurred.";
+      return 'Unexpected error occurred.';
   }
 };
 
@@ -54,41 +47,41 @@ const logPartialResponse = async (
   userMessage: UIMessage<unknown, UIDataTypes, UITools>,
   partialResponse: string,
   model?: string,
-  complexity?: number,
+  complexity?: number
 ) => {
   try {
-    if (!partialResponse || typeof partialResponse !== "string") {
-      console.warn("Invalid partial response content:", partialResponse);
+    if (!partialResponse || typeof partialResponse !== 'string') {
+      console.warn('Invalid partial response content:', partialResponse);
       return;
     }
 
     const trimmedResponse = partialResponse.trim();
     if (!trimmedResponse) {
-      console.warn("Empty partial response, skipping save");
+      console.warn('Empty partial response, skipping save');
       return;
     }
 
-    if (!sessionId || typeof sessionId !== "string") {
-      console.warn("Invalid sessionId for partial response:", sessionId);
+    if (!sessionId || typeof sessionId !== 'string') {
+      console.warn('Invalid sessionId for partial response:', sessionId);
       return;
     }
 
-    const partialContent = trimmedResponse.replace(/\[partial\]/gi, "").trim();
+    const partialContent = trimmedResponse.replace(/\[partial\]/gi, '').trim();
     const userContent = extractText(userMessage);
 
     if (partialContent && userContent) {
       console.log(
-        `💾 Saving both USER and AI messages (AI: ${partialContent.length} chars, USER: ${userContent.length} chars)`,
+        `💾 Saving both USER and AI messages (AI: ${partialContent.length} chars, USER: ${userContent.length} chars)`
       );
 
       // Use default values if model or complexity are undefined
-      const finalModel = model || "unknown";
+      const finalModel = model || 'unknown';
       const finalComplexity = complexity || 0;
 
       // Save USER message
       await saveMessage({
         sessionId,
-        role: "USER",
+        role: 'USER',
         content: userContent,
         model: finalModel,
         complexity: finalComplexity,
@@ -97,7 +90,7 @@ const logPartialResponse = async (
       // Save AI message
       await saveMessage({
         sessionId,
-        role: "AI",
+        role: 'AI',
         content: partialContent,
         model: finalModel,
         complexity: finalComplexity,
@@ -113,20 +106,18 @@ const logPartialResponse = async (
   }
 };
 
-const handleStreamingError = (
-  error: StreamingError,
-): { status: number; message: string } => {
-  console.error("AI streaming failed:", error);
+const handleStreamingError = (error: StreamingError): { status: number; message: string } => {
+  console.error('AI streaming failed:', error);
 
-  if (error?.name === "AbortError") {
-    return { status: 499, message: "Request cancelled by client" };
+  if (error?.name === 'AbortError') {
+    return { status: 499, message: 'Request cancelled by client' };
   }
 
-  if (error?.message?.includes("quota") || error?.code === 429) {
+  if (error?.message?.includes('quota') || error?.code === 429) {
     return { status: 429, message: getErrorMessage(429) };
   }
 
-  if (error?.message?.includes("model") || error?.code === 400) {
+  if (error?.message?.includes('model') || error?.code === 400) {
     return { status: 400, message: getErrorMessage(400) };
   }
 
@@ -143,7 +134,7 @@ export async function POST(req: Request) {
   try {
     const userId = await getServerUserId();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const timeoutController = new AbortController();
     const timeoutId = setTimeout(() => {
@@ -160,10 +151,7 @@ export async function POST(req: Request) {
 
     if (combinedSignal.aborted) {
       cleanup();
-      return Response.json(
-        { error: "Request cancelled by client" },
-        { status: 499 },
-      );
+      return Response.json({ error: 'Request cancelled by client' }, { status: 499 });
     }
 
     try {
@@ -171,25 +159,19 @@ export async function POST(req: Request) {
       const body = (await req.json()) as {
         currentMessage: UIMessage<unknown, UIDataTypes, UITools>;
         sessionId: string;
-        chatMode: "agent" | "simple";
+        chatMode: 'agent' | 'simple';
         model: string;
       };
       const { sessionId, currentMessage, chatMode, model } = body;
 
       if (!sessionId) {
         cleanup();
-        return Response.json(
-          { error: "Session ID is required" },
-          { status: 400 },
-        );
+        return Response.json({ error: 'Session ID is required' }, { status: 400 });
       }
 
       if (!currentMessage) {
         cleanup();
-        return Response.json(
-          { error: "Current message is required" },
-          { status: 400 },
-        );
+        return Response.json({ error: 'Current message is required' }, { status: 400 });
       }
 
       // Load conversation history
@@ -199,79 +181,82 @@ export async function POST(req: Request) {
       ]);
       const dbMessages = session?.messages;
 
-      const historyMessages: UIMessage<unknown, UIDataTypes, UITools>[] =
-        dbMessages!.map((msg) => ({
+      const historyMessages: UIMessage<unknown, UIDataTypes, UITools>[] = dbMessages!.map(
+        (msg) => ({
           id: msg.id,
-          role: msg.role === "USER" ? "user" : "assistant",
-          parts: [{ type: "text", text: msg.content }],
+          role: msg.role === 'USER' ? 'user' : 'assistant',
+          parts: [{ type: 'text', text: msg.content }],
           createdAt: msg.createdAt,
-        }));
-
-      console.log(
-        `Session ${sessionId}: Loaded ${historyMessages.length} messages from database`,
+        })
       );
 
-      if (!currentMessage || currentMessage.role !== "user") {
+      console.log(`Session ${sessionId}: Loaded ${historyMessages.length} messages from database`);
+
+      if (!currentMessage || currentMessage.role !== 'user') {
         cleanup();
-        return Response.json(
-          { error: "Invalid user message" },
-          { status: 400 },
-        );
+        return Response.json({ error: 'Invalid user message' }, { status: 400 });
       }
 
       const messagesForAI = [...historyMessages, currentMessage].slice(-20);
 
-      let partialResponse = "";
+      const gatewayKey = await getUserGatewayKey(userId);
+
+      if (!gatewayKey) {
+        cleanup();
+        return Response.json(
+          { error: 'Please add your Vercel AI Gateway key in settings' },
+          { status: 400 }
+        );
+      }
+
+      let partialResponse = '';
 
       try {
         const messagesForRouter = messagesForAI.slice(-4);
 
         const modelResult =
-          model === "auto"
-            ? await GetBestModel(messagesForRouter, chatMode)
-            : null;
+          model === 'auto' ? await GetBestModel(messagesForRouter, chatMode, gatewayKey) : null;
         const autoModel = modelResult?.autoModel;
         const complexity = modelResult?.complexity;
-        const finalModel = model === "auto" ? autoModel : model;
+        const finalModel = model === 'auto' ? autoModel : model;
+
+        const gateway = createGateway({ apiKey: gatewayKey });
 
         const result = streamText({
-          providerOptions: {
-            gateway: getGatewayConfig(finalModel!),
-          },
+          model: gateway(finalModel!),
           system: `
-          These are user preferences/traits-${customData}.
+           These are user preferences/traits-${customData}.
 
-          remember:never use any tool when user is passing greetings or compliments.rest aways use tools .
+           remember:never use any tool when user is passing greetings or compliments.rest aways use tools .
 
-          note:use webSearch tool is just for getting relevant links and then you will use crawler to crawl that all links in batch for best performance.
+           note:use webSearch tool is just for getting relevant links and then you will use crawler to crawl that all links in batch for best performance.
 
-          `,
-          model: finalModel!,
+           `,
           tools:
-            body.chatMode === "agent"
+            body.chatMode === 'agent'
               ? {
                   webSearch,
                   urlCrawler,
                 }
               : undefined,
-          stopWhen: body.chatMode === "agent" ? [stepCountIs(10)] : undefined,
-          toolChoice: body.chatMode === "agent" ? "auto" : undefined,
+          stopWhen: body.chatMode === 'agent' ? [stepCountIs(10)] : undefined,
+          toolChoice: body.chatMode === 'agent' ? 'auto' : undefined,
           messages: convertToModelMessages(messagesForAI),
           experimental_transform: smoothStream({
             delayInMs: 20,
-            chunking: "word",
+            chunking: 'word',
           }),
           abortSignal: combinedSignal,
 
           onAbort: async () => {
-            console.log("🛑 Stream aborted, saving partial response");
+            console.log('🛑 Stream aborted, saving partial response');
             if (partialResponse.trim()) {
               await logPartialResponse(
                 sessionId,
                 currentMessage,
                 partialResponse,
                 finalModel,
-                complexity,
+                complexity
               );
             }
           },
@@ -279,12 +264,12 @@ export async function POST(req: Request) {
           onFinish: async (e) => {
             try {
               if (combinedSignal.aborted) {
-                console.log("⚠️ Stream finished with abort");
+                console.log('⚠️ Stream finished with abort');
                 // onAbort already handled saving partial response
                 return;
               }
 
-              console.log("✅ Stream finished normally");
+              console.log('✅ Stream finished normally');
 
               const userContent = extractText(currentMessage);
               let assistantContent = (
@@ -298,15 +283,10 @@ export async function POST(req: Request) {
                 const resp = (
                   e as {
                     text?: string;
-                    responseMessages?: UIMessage<
-                      unknown,
-                      UIDataTypes,
-                      UITools
-                    >[];
+                    responseMessages?: UIMessage<unknown, UIDataTypes, UITools>[];
                   }
                 ).responseMessages?.find(
-                  (m: UIMessage<unknown, UIDataTypes, UITools>) =>
-                    m?.role === "assistant",
+                  (m: UIMessage<unknown, UIDataTypes, UITools>) => m?.role === 'assistant'
                 );
                 assistantContent = resp ? extractText(resp) : undefined;
               }
@@ -320,14 +300,12 @@ export async function POST(req: Request) {
                     };
                   }
                 )?.usageMetadata || {};
-              const totalTokens =
-                (usage.promptTokenCount || 0) +
-                (usage.candidatesTokenCount || 0);
-              console.log("Total tokens-", totalTokens);
+              const totalTokens = (usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0);
+              console.log('Total tokens-', totalTokens);
 
               console.log(
-                "Provider metadata-",
-                JSON.stringify(await result.providerMetadata, null, 2),
+                'Provider metadata-',
+                JSON.stringify(await result.providerMetadata, null, 2)
               );
 
               if (userContent && assistantContent) {
@@ -345,7 +323,7 @@ export async function POST(req: Request) {
                     model: finalModel!,
                   });
                 } catch (loggingError) {
-                  console.error("Failed to log messages:", loggingError);
+                  console.error('Failed to log messages:', loggingError);
                 }
               }
 
@@ -355,32 +333,32 @@ export async function POST(req: Request) {
                 toPush.push(createAssistantMessage(assistantContent));
               }
             } catch (error) {
-              console.error("Error in onFinish:", error);
+              console.error('Error in onFinish:', error);
               await logPartialResponse(
                 sessionId,
                 currentMessage,
                 partialResponse,
                 finalModel,
-                complexity,
+                complexity
               );
             }
           },
 
           onChunk: async (e) => {
-            if (e.chunk?.type === "text-delta") {
+            if (e.chunk?.type === 'text-delta') {
               partialResponse += e.chunk.text;
             }
           },
 
           onError: async (error) => {
-            console.error("Stream error:", error);
+            console.error('Stream error:', error);
             if (partialResponse.trim()) {
               await logPartialResponse(
                 sessionId,
                 currentMessage,
                 partialResponse,
                 finalModel,
-                complexity,
+                complexity
               );
             }
             cleanup();
@@ -394,16 +372,16 @@ export async function POST(req: Request) {
               currentMessage,
               partialResponse,
               finalModel,
-              complexity,
+              complexity
             );
           }
           cleanup();
-          return Response.json({ error: "Request cancelled" }, { status: 499 });
+          return Response.json({ error: 'Request cancelled' }, { status: 499 });
         }
 
         return result.toUIMessageStreamResponse({
           originalMessages: messagesForAI,
-          consumeSseStream: consumeStream, 
+          consumeSseStream: consumeStream,
         });
       } catch (error: unknown) {
         if (partialResponse.trim()) {
@@ -412,9 +390,7 @@ export async function POST(req: Request) {
 
         cleanup();
 
-        const { status, message } = handleStreamingError(
-          error as StreamingError,
-        );
+        const { status, message } = handleStreamingError(error as StreamingError);
 
         return Response.json({ error: message }, { status });
       }
@@ -428,19 +404,19 @@ export async function POST(req: Request) {
       cleanup();
     }
   } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("maintenance")) {
+    if (error instanceof Error && error.message.includes('maintenance')) {
       return Response.json(
         {
-          error: "Chat is currently under maintenance. Please try again later.",
+          error: 'Chat is currently under maintenance. Please try again later.',
         },
-        { status: 503 },
+        { status: 503 }
       );
     }
 
-    if (error instanceof Error && error.message.includes("Unauthorized")) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

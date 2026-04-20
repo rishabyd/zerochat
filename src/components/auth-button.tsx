@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { signIn, signOut, useSession } from "@/lib/auth-client";
-import { Button } from "./ui/button";
+import { signIn, signOut, useSession } from '@/lib/auth-client';
+import { Button } from './ui/button';
 
 export function AuthButton() {
   const { data } = useSession();
@@ -17,11 +17,7 @@ export function AuthButton() {
         </div>
       ) : (
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => signIn.social({ provider: "google" })}
-          >
+          <Button size="sm" variant="outline" onClick={() => signIn.social({ provider: 'google' })}>
             Sign in with Google
           </Button>
         </div>

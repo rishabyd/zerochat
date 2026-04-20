@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "motion/react";
+import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'motion/react';
 
 export function InputBoxSkeleton() {
   return (

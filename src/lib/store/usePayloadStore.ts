@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { payloadType } from "../types";
+import { create } from 'zustand';
+import { payloadType } from '../types';
 
 type PayloadStore = payloadType & {
   setPrompt: (prompt: string) => void; // Update current prompt text
@@ -7,14 +7,14 @@ type PayloadStore = payloadType & {
   reset: () => void; // Reset all values to defaults
   setMode: (mode: string) => void;
   setModel: (model: string) => void; // Set AI model
-  setChatMode: (chatMode: "agent" | "simple") => void; // Set chat mode
+  setChatMode: (chatMode: 'agent' | 'simple') => void; // Set chat mode
 };
 
 const defaultPayload: payloadType = {
-  prompt: "", // Empty prompt by default
-  mode: "General", // Default chat mode
-  model: "auto", // Default AI model
-  chatMode: "agent", // Default chat mode (agent or simple)
+  prompt: '', // Empty prompt by default
+  mode: 'General', // Default chat mode
+  model: 'auto', // Default AI model
+  chatMode: 'agent', // Default chat mode (agent or simple)
 };
 
 export const usePayloadStore = create<PayloadStore>((set) => ({

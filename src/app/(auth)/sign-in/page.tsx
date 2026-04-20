@@ -1,16 +1,10 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { signIn } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { signIn } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 export default function SignIn() {
   const [loading, setLoading] = useState(false);
@@ -19,28 +13,21 @@ export default function SignIn() {
     <div className="size-full flex justify-center items-center">
       <Card className="lg:w-sm w-xs  ">
         <CardHeader className="">
-          <CardTitle className="text-lg font-mono  lg:text-2xl text-center">
-            ZeroChat
-          </CardTitle>
+          <CardTitle className="text-lg font-mono  lg:text-2xl text-center">ZeroChat</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            <div
-              className={cn(
-                "w-full gap-2 flex items-center",
-                "justify-between flex-col",
-              )}
-            >
+            <div className={cn('w-full gap-2 flex items-center', 'justify-between flex-col')}>
               <Button
                 variant="outline"
-                size={"lg"}
-                className={cn("w-full gap-2")}
+                size={'lg'}
+                className={cn('w-full gap-2')}
                 disabled={loading}
                 onClick={async () => {
                   await signIn.social(
                     {
-                      provider: "google",
-                      callbackURL: "/",
+                      provider: 'google',
+                      callbackURL: '/',
                     },
                     {
                       onRequest: (ctx) => {
@@ -49,7 +36,7 @@ export default function SignIn() {
                       onResponse: (ctx) => {
                         setLoading(false);
                       },
-                    },
+                    }
                   );
                 }}
               >

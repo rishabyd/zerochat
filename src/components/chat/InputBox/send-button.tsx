@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import React from "react";
+import { Button } from '@/components/ui/button';
+import React from 'react';
 
 export default function SendButton({
   className,
@@ -11,7 +11,7 @@ export default function SendButton({
   props: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }) {
   return (
-    <Button variant={"outline"} {...props} className={`  ${className}`}>
+    <Button variant={'outline'} {...props} className={`  ${className}`}>
       {children}
     </Button>
   );

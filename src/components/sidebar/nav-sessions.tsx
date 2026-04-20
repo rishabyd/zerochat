@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { DeleteSession } from "@/lib/actions/chatSession-action";
-import { fetcher } from "@/lib/fetcher";
-import { MessageSquareIcon, RefreshCw, Trash2 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useMemo, useTransition } from "react";
-import { toast } from "sonner";
-import useSWR from "swr";
-import { Button } from "../ui/button";
+import { DeleteSession } from '@/lib/actions/chatSession-action';
+import { fetcher } from '@/lib/fetcher';
+import { MessageSquareIcon, RefreshCw, Trash2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useMemo, useTransition } from 'react';
+import { toast } from 'sonner';
+import useSWR from 'swr';
+import { Button } from '../ui/button';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -18,8 +18,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "../ui/sidebar";
-import { Skeleton } from "../ui/skeleton";
+} from '../ui/sidebar';
+import { Skeleton } from '../ui/skeleton';
 
 type Session = {
   id: string;
@@ -46,7 +46,7 @@ export function NavSessions() {
     error,
     isLoading,
     mutate,
-  } = useSWR<Session[]>("/api/sessions", fetcher, {
+  } = useSWR<Session[]>('/api/sessions', fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 5000,
   });
@@ -54,7 +54,7 @@ export function NavSessions() {
   const items = useMemo<SessionItem[]>(() => {
     return (sessions ?? []).map((s) => ({
       id: s.id,
-      title: s.title || "Untitled",
+      title: s.title || 'Untitled',
       href: `c/${s.id}`,
       isActive: pathname?.includes(s.id) ?? false,
     }));
@@ -77,12 +77,12 @@ export function NavSessions() {
 
       // Redirect if deleting current session
       if (pathname?.includes(id)) {
-        router.push("/");
+        router.push('/');
       }
 
-      toast.success("Session deleted");
+      toast.success('Session deleted');
     } catch (error) {
-      toast.error("Failed to delete session");
+      toast.error('Failed to delete session');
       mutate(); // Revalidate on error
     }
   };
@@ -113,9 +113,7 @@ export function NavSessions() {
             disabled={isPending}
             className="w-full"
           >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${isPending && "animate-spin"}`}
-            />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isPending && 'animate-spin'}`} />
             Retry
           </Button>
         </div>
@@ -134,7 +132,7 @@ export function NavSessions() {
           disabled={isPending}
           className="h-7 w-7"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${isPending && "animate-spin"}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${isPending && 'animate-spin'}`} />
           <span className="sr-only">Refresh sessions</span>
         </Button>
       </SidebarGroupLabel>
@@ -149,9 +147,7 @@ export function NavSessions() {
                   exit={{ opacity: 0, y: -10 }}
                   className="px-4 py-8 text-center"
                 >
-                  <p className="text-sm text-muted-foreground">
-                    No sessions yet
-                  </p>
+                  <p className="text-sm text-muted-foreground">No sessions yet</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     Start a new chat to create one
                   </p>

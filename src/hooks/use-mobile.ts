@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 // Custom hook to detect mobile devices for responsive UI adjustments
 export function useIsMobile() {
@@ -9,9 +9,9 @@ export function useIsMobile() {
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Check if window is available (client-side only)
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       // Define mobile breakpoint and check screen width
       const checkIsMobile = () => {
         setIsMobile(window.innerWidth < 768); // 768px is typical mobile breakpoint
@@ -21,10 +21,10 @@ export function useIsMobile() {
       checkIsMobile();
 
       // Add resize listener to update on screen size changes
-      window.addEventListener("resize", checkIsMobile);
+      window.addEventListener('resize', checkIsMobile);
 
       // Cleanup listener on unmount
-      return () => window.removeEventListener("resize", checkIsMobile);
+      return () => window.removeEventListener('resize', checkIsMobile);
     }
   }, []);
 

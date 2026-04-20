@@ -1,5 +1,5 @@
-import type { UnifiedProfile } from "@/lib/types";
-import { create } from "zustand";
+import type { UnifiedProfile } from '@/lib/types';
+import { create } from 'zustand';
 
 interface UserProfileStore {
   profile: UnifiedProfile | null;
@@ -25,17 +25,16 @@ export const useUserProfileStore = create<UserProfileStore>((set, _get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await fetch("/api/user/profile");
+      const response = await fetch('/api/user/profile');
       if (!response.ok) {
-        throw new Error("Failed to fetch profile");
+        throw new Error('Failed to fetch profile');
       }
 
       const data = await response.json();
       set({ profile: data as UnifiedProfile, isLoading: false });
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to fetch profile",
+        error: error instanceof Error ? error.message : 'Failed to fetch profile',
         isLoading: false,
       });
     }

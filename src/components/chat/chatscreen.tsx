@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { handleClientError } from "@/lib/services/errors";
-import { useChatStore } from "@/lib/store/useChatStore";
-import { usePayloadStore } from "@/lib/store/usePayloadStore";
-import { generateMessageId } from "@/lib/utils";
-import { useChat } from "@ai-sdk/react";
-import type { UIDataTypes, UIMessage, UITools } from "ai";
-import { DefaultChatTransport } from "ai";
-import { Plus } from "lucide-react";
-import { motion } from "motion/react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { Button } from "../ui/button";
-import MainInputBox from "./InputBox/input-box";
-import MessageArea from "./message/message-area";
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { handleClientError } from '@/lib/services/errors';
+import { useChatStore } from '@/lib/store/useChatStore';
+import { usePayloadStore } from '@/lib/store/usePayloadStore';
+import { generateMessageId } from '@/lib/utils';
+import { useChat } from '@ai-sdk/react';
+import type { UIDataTypes, UIMessage, UITools } from 'ai';
+import { DefaultChatTransport } from 'ai';
+import { Plus } from 'lucide-react';
+import { motion } from 'motion/react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Button } from '../ui/button';
+import MainInputBox from './InputBox/input-box';
+import MessageArea from './message/message-area';
 
-const transport = new DefaultChatTransport({ api: "/api/chat" });
+const transport = new DefaultChatTransport({ api: '/api/chat' });
 
 function ChatPage({
   sessionId,
@@ -60,10 +60,7 @@ function ChatPage({
   const displayMessages = useMemo(() => {
     if (!seedMessages?.length) return messages;
     if (!messages.length) return seedMessages;
-    const messageMap = new Map<
-      string,
-      UIMessage<unknown, UIDataTypes, UITools>
-    >();
+    const messageMap = new Map<string, UIMessage<unknown, UIDataTypes, UITools>>();
 
     seedMessages.forEach((msg) => {
       if (msg.id) {
@@ -83,65 +80,53 @@ function ChatPage({
   const createUserMessage = useCallback(
     (text: string): UIMessage<unknown, UIDataTypes, UITools> => ({
       id: generateMessageId(),
-      role: "user" as const,
-      parts: [{ type: "text", text }],
+      role: 'user' as const,
+      parts: [{ type: 'text', text }],
     }),
-    [],
+    []
   );
 
   const sendWithSession = useCallback(
-    (
-      message: { text: string },
-      options?: { body?: Record<string, unknown> },
-    ) => {
+    (message: { text: string }, options?: { body?: Record<string, unknown> }) => {
       return sendMessage(message, {
         body: {
-          chatMode: globalChatMode || "agent",
-          model: globalModel || "auto", 
+          chatMode: globalChatMode || 'agent',
+          model: globalModel || 'auto',
           ...(options?.body || {}),
           sessionId,
           currentMessage: createUserMessage(message.text),
         },
       });
     },
-    [sendMessage, sessionId, createUserMessage, globalChatMode, globalModel],
+    [sendMessage, sessionId, createUserMessage, globalChatMode, globalModel]
   );
 
   const memoizedStop = useCallback(() => stop(), [stop]);
 
   const hasAutoSentRef = useRef(false);
   useEffect(() => {
-    if (hasAutoSentRef.current) return; 
-    if (!initialPrompt) return; 
-    if (status !== "ready") return; 
+    if (hasAutoSentRef.current) return;
+    if (!initialPrompt) return;
+    if (status !== 'ready') return;
 
-    const hasExistingMessages =
-      (seedMessages && seedMessages.length > 0) || messages.length > 0;
+    const hasExistingMessages = (seedMessages && seedMessages.length > 0) || messages.length > 0;
 
     if (hasExistingMessages) {
-      hasAutoSentRef.current = true;  
-      setPrompt(""); 
+      hasAutoSentRef.current = true;
+      setPrompt('');
       return;
     }
 
-    if (sessionId && status === "ready") {
-      hasAutoSentRef.current = true; 
+    if (sessionId && status === 'ready') {
+      hasAutoSentRef.current = true;
       const text = initialPrompt;
-      setPrompt(""); 
+      setPrompt('');
       sendWithSession({ text });
     }
-  }, [
-    setPrompt,
-    initialPrompt,
-    status,
-    messages.length,
-    sendWithSession,
-    sessionId,
-    seedMessages,
-  ]);
+  }, [setPrompt, initialPrompt, status, messages.length, sendWithSession, sessionId, seedMessages]);
 
   useEffect(() => {
-    if (status === "submitted" || status === "streaming") {
+    if (status === 'submitted' || status === 'streaming') {
       setStopResponse(true);
       setThinking(true);
     } else {
@@ -187,11 +172,7 @@ function ChatPage({
       </div>
 
       <motion.div className="shrink-0 mx-auto pb-2 lg:pb-4">
-        <MainInputBox
-          stopResponse={memoizedStop}
-          sendMessage={sendWithSession}
-          status={status}
-        />
+        <MainInputBox stopResponse={memoizedStop} sendMessage={sendWithSession} status={status} />
       </motion.div>
     </div>
   );

@@ -1,7 +1,7 @@
 export type UserUsageAnalytics =
   | {
-      mode: "CREDITS";
-      plan: "FREE";
+      mode: 'CREDITS';
+      plan: 'FREE';
       usagePercentage: number;
       currentUsage: number; // credits used
       remainingCredits: number;
@@ -9,8 +9,8 @@ export type UserUsageAnalytics =
       lastResetAt: Date;
     }
   | {
-      mode: "QUERIES";
-      plan: "PRO";
+      mode: 'QUERIES';
+      plan: 'PRO';
       usagePercentage: number; // monthly percentage
       currentUsage: number; // monthly queries used
       monthlyLimit: number;

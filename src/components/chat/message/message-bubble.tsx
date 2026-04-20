@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { Message, MessageContent } from "@/components/ai-elements/message";
-import { Response } from "@/components/ai-elements/response";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import type { UIDataTypes, UIMessage, UITools } from "ai";
-import { motion } from "motion/react";
-import { useMemo, useState } from "react";
+import { Message, MessageContent } from '@/components/ai-elements/message';
+import { Response } from '@/components/ai-elements/response';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import type { UIDataTypes, UIMessage, UITools } from 'ai';
+import { motion } from 'motion/react';
+import { useMemo, useState } from 'react';
 
 const MOBILE_BREAKPOINT = 768; // Mobile breakpoint in pixels
 
 // Type definitions for message handling
 type AllowedUIMessage = UIMessage<unknown, UIDataTypes, UITools> & {
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
 };
 
 interface MessageBubbleProps {
@@ -24,25 +24,25 @@ interface MessageBubbleProps {
  * with proper styling and markdown support for assistant messages
  */
 export default function MessageBubble({ msg }: MessageBubbleProps) {
-  const isUser = msg.role === "user"; // Determine if message is from user
+  const isUser = msg.role === 'user'; // Determine if message is from user
   const [isExpanded, setIsExpanded] = useState(false); // Control message expansion state
 
   // Extract text content from message parts for display
   const text = useMemo(() => {
     return msg.parts
-      .filter((part) => part.type === "text") // Filter only text parts
+      .filter((part) => part.type === 'text') // Filter only text parts
       .map((part) => {
-        if (part.type === "text") {
-          return String(part.text ?? ""); // Convert text to string safely
+        if (part.type === 'text') {
+          return String(part.text ?? ''); // Convert text to string safely
         }
-        return "";
+        return '';
       })
-      .join("\n"); // Join multiple text parts with newlines
+      .join('\n'); // Join multiple text parts with newlines
   }, [msg.parts]);
 
   // Check if message is long enough to need expansion toggle
   const isLongMessage = useMemo(() => {
-    return text.split("\n").length > 3; // Show expansion if more than 3 lines
+    return text.split('\n').length > 3; // Show expansion if more than 3 lines
   }, [text]);
 
   return (
@@ -51,7 +51,7 @@ export default function MessageBubble({ msg }: MessageBubbleProps) {
       animate={{ opacity: 1 }}
       transition={{
         duration: 0.3,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       }}
       className="w-full max-w-[95vw] lg:max-w-[55vw] box-border mx-auto mb-4"
     >
@@ -61,8 +61,8 @@ export default function MessageBubble({ msg }: MessageBubbleProps) {
             <div className="relative">
               <p
                 className={cn(
-                  "whitespace-pre-wrap leading-5",
-                  !isExpanded && isLongMessage && "line-clamp-3",
+                  'whitespace-pre-wrap leading-5',
+                  !isExpanded && isLongMessage && 'line-clamp-3'
                 )}
               >
                 {text}
@@ -75,7 +75,7 @@ export default function MessageBubble({ msg }: MessageBubbleProps) {
                     size="sm"
                     className="cursor-pointer mt-2 mx-auto text-xs rounded-none border transition-colors"
                   >
-                    {isExpanded ? "Show less" : "Show more"}
+                    {isExpanded ? 'Show less' : 'Show more'}
                   </Button>
                 )}
               </div>
