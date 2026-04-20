@@ -214,7 +214,7 @@ export default function MessageAreaComponent({ messages }: MessageAreaProps) {
                   <Message from={msg.role}>
                     <MessageContent>
                       {consolidatedText.trim() && (
-                        <Response shikiTheme={['one-light', 'ayu-dark']} key={`${msg.id}-response`}>
+                        <Response shikiTheme={['vitesse-light', 'vitesse-dark']} key={`${msg.id}-response`}>
                           {consolidatedText}
                         </Response>
                       )}

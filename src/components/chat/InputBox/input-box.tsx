@@ -208,7 +208,7 @@ function MainInputBox({
       transition={{ duration: 0.2 }}
       layout
       onSubmit={handleSubmit}
-      className={`w-[96vw] origin-center  lg:max-w-[50vw] mx-auto shadow-md shadow-background/50
+      className={`w-[96vw] origin-center lg:max-w-[55vw] mx-auto shadow-md shadow-background/50
                  h-fit flex p-2 gap-2 border-2 items-center bg-sidebar ${
                    disabled ? 'cursor-not-allowed' : ''
                  }`}
