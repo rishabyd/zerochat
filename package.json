@@ -46,6 +46,7 @@
     "better-auth": "^1.3.34",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^16.6.1",
     "embla-carousel-react": "^8.6.0",
     "exa-js": "^1.9.3",
     "highlight.js": "^11.11.1",
