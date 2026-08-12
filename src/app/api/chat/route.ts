@@ -15,6 +15,8 @@ import type { UIDataTypes, UIMessage, UITools } from 'ai';
 import { consumeStream, convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai';
 import { NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
 const createAssistantMessage = (content: string): UIMessage<unknown, UIDataTypes, UITools> => ({
   id: generateMessageId(),
   role: 'assistant',
@@ -51,7 +53,7 @@ const logPartialResponse = async (
 ) => {
   try {
     if (!partialResponse || typeof partialResponse !== 'string') {
-      console.warn('Invalid partial response content:', partialResponse);
+      console.warn('Invalid partial response content');
       return;
     }
 
@@ -100,14 +102,12 @@ const logPartialResponse = async (
     console.error(`Failed to save partial response:`, {
       sessionId,
       partialResponseLength: partialResponse?.length,
-      error: error instanceof Error ? error.message : error,
-      stack: error instanceof Error ? error.stack : undefined,
     });
   }
 };
 
 const handleStreamingError = (error: StreamingError): { status: number; message: string } => {
-  console.error('AI streaming failed:', error);
+  console.error('AI streaming failed');
 
   if (error?.name === 'AbortError') {
     return { status: 499, message: 'Request cancelled by client' };
@@ -303,11 +303,6 @@ export async function POST(req: Request) {
               const totalTokens = (usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0);
               console.log('Total tokens-', totalTokens);
 
-              console.log(
-                'Provider metadata-',
-                JSON.stringify(await result.providerMetadata, null, 2)
-              );
-
               if (userContent && assistantContent) {
                 try {
                   await saveUserMessage({
@@ -323,7 +318,7 @@ export async function POST(req: Request) {
                     model: finalModel!,
                   });
                 } catch (loggingError) {
-                  console.error('Failed to log messages:', loggingError);
+                  console.error('Failed to log messages');
                 }
               }
 
@@ -333,7 +328,7 @@ export async function POST(req: Request) {
                 toPush.push(createAssistantMessage(assistantContent));
               }
             } catch (error) {
-              console.error('Error in onFinish:', error);
+              console.error('Error in onFinish');
               await logPartialResponse(
                 sessionId,
                 currentMessage,
@@ -351,7 +346,7 @@ export async function POST(req: Request) {
           },
 
           onError: async (error) => {
-            console.error('Stream error:', error);
+            console.error('Stream error');
             if (partialResponse.trim()) {
               await logPartialResponse(
                 sessionId,

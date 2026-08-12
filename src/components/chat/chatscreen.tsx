@@ -1,6 +1,10 @@
 'use client';
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import {
+  isGatewayKeyUnavailable,
+  useGatewayKeyStatus,
+} from '@/hooks/use-gateway-key-status';
 import { handleClientError } from '@/lib/services/errors';
 import { useChatStore } from '@/lib/store/useChatStore';
 import { usePayloadStore } from '@/lib/store/usePayloadStore';
@@ -38,6 +42,13 @@ function ChatPage({
   const setPrompt = usePayloadStore((state) => state.setPrompt);
   const globalModel = usePayloadStore((state) => state.model);
   const globalChatMode = usePayloadStore((state) => state.chatMode);
+  const { data: gatewayKeyStatus, error: gatewayKeyError, isLoading: gatewayKeyLoading } =
+    useGatewayKeyStatus();
+  const gatewayKeyUnavailable = isGatewayKeyUnavailable(
+    gatewayKeyStatus,
+    gatewayKeyLoading,
+    gatewayKeyError
+  );
 
   const Transport = useMemo(() => transport, []);
 
@@ -108,6 +119,7 @@ function ChatPage({
     if (hasAutoSentRef.current) return;
     if (!initialPrompt) return;
     if (status !== 'ready') return;
+    if (gatewayKeyUnavailable) return;
 
     const hasExistingMessages = (seedMessages && seedMessages.length > 0) || messages.length > 0;
 
@@ -123,7 +135,16 @@ function ChatPage({
       setPrompt('');
       sendWithSession({ text });
     }
-  }, [setPrompt, initialPrompt, status, messages.length, sendWithSession, sessionId, seedMessages]);
+  }, [
+    setPrompt,
+    initialPrompt,
+    status,
+    messages.length,
+    sendWithSession,
+    sessionId,
+    seedMessages,
+    gatewayKeyUnavailable,
+  ]);
 
   useEffect(() => {
     if (status === 'submitted' || status === 'streaming') {

@@ -6,36 +6,34 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { useGatewayKeyStatus } from '@/hooks/use-gateway-key-status';
 import { SaveCustomInstructions } from '@/lib/actions/user-actions';
-import { Key, Palette, Sparkles } from 'lucide-react';
+import { Key, Palette, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const [customInstructions, setCustomInstructions] = useState('');
   const [gatewayKey, setGatewayKey] = useState('');
+  const [gatewayKeyInput, setGatewayKeyInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const {
+    data: gatewayKeyStatus,
+    isLoading: gatewayKeyStatusLoading,
+    mutate: refreshGatewayKeyStatus,
+  } = useGatewayKeyStatus();
 
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const [personaliseRes, gatewayRes] = await Promise.all([
-          fetch('/api/user/personalise'),
-          fetch('/api/user/gateway-key'),
-        ]);
+        const personaliseRes = await fetch('/api/user/personalise');
 
         if (personaliseRes.ok) {
           const data = await personaliseRes.json();
           setCustomInstructions(data || '');
         }
 
-        if (gatewayRes.ok) {
-          const gatewayData = await gatewayRes.json();
-          if (gatewayData.hasKey) {
-            setGatewayKey(gatewayData.masked || 'gw_***');
-          }
-        }
       } catch (error) {
         console.error('Failed to fetch settings:', error);
       } finally {
@@ -45,6 +43,11 @@ export default function SettingsPage() {
 
     fetchSettings();
   }, []);
+
+  useEffect(() => {
+    if (!gatewayKeyStatus) return;
+    setGatewayKey(gatewayKeyStatus.hasKey ? gatewayKeyStatus.masked || '' : '');
+  }, [gatewayKeyStatus]);
 
   async function handleInstructionsSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -64,8 +67,7 @@ export default function SettingsPage() {
     e.preventDefault();
     setIsSaving(true);
 
-    const keyInput = document.getElementById('gatewayKey') as HTMLInputElement;
-    const key = keyInput?.value?.trim();
+    const key = gatewayKeyInput.trim();
 
     if (!key) {
       toast.error('Please enter your API key');
@@ -75,7 +77,7 @@ export default function SettingsPage() {
 
     try {
       const response = await fetch('/api/user/gateway-key', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gatewayKey: key }),
       });
@@ -87,11 +89,40 @@ export default function SettingsPage() {
         return;
       }
 
-      setGatewayKey(data.masked);
+      setGatewayKey(data.masked || '');
+      setGatewayKeyInput('');
+      await refreshGatewayKeyStatus(
+        { hasKey: true, masked: data.masked || null },
+        { revalidate: false }
+      );
       toast.success('Gateway key saved');
-    } catch (error) {
-      console.error('Failed to save gateway key:', error);
+    } catch {
+      console.error('Failed to save gateway key');
       toast.error('Failed to save key');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleGatewayDelete() {
+    setIsSaving(true);
+
+    try {
+      const response = await fetch('/api/user/gateway-key', { method: 'DELETE' });
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to delete key');
+        return;
+      }
+
+      setGatewayKey('');
+      setGatewayKeyInput('');
+      await refreshGatewayKeyStatus({ hasKey: false, masked: null }, { revalidate: false });
+      toast.success('Gateway key deleted');
+    } catch {
+      console.error('Failed to delete gateway key');
+      toast.error('Failed to delete key');
     } finally {
       setIsSaving(false);
     }
@@ -140,6 +171,9 @@ export default function SettingsPage() {
                       type="password"
                       placeholder="vck_xxxxxxxxxxxxxxxx"
                       autoComplete="off"
+                      value={gatewayKeyInput}
+                      onChange={(event) => setGatewayKeyInput(event.target.value)}
+                      disabled={isLoading || gatewayKeyStatusLoading || isSaving}
                     />
                     <p className="text-xs text-muted-foreground">
                       Get your key from{' '}
@@ -153,7 +187,7 @@ export default function SettingsPage() {
                       </a>
                     </p>
                     {gatewayKey && (
-<p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Current key: {gatewayKey}
                       </p>
                     )}
@@ -161,8 +195,19 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-              <div className="flex justify-end">
-                <Button type="submit" disabled={isSaving}>
+              <div className="flex justify-end gap-2">
+                {gatewayKey && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGatewayDelete}
+                    disabled={isSaving}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Key
+                  </Button>
+                )}
+                <Button type="submit" disabled={isLoading || gatewayKeyStatusLoading || isSaving}>
                   {isSaving ? 'Saving...' : 'Save Key'}
                 </Button>
               </div>

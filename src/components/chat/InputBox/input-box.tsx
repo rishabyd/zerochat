@@ -3,6 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { Toggle } from '@/components/ui/toggle';
 import { SyncClientSession } from '@/lib/actions/chatSession-action';
+import {
+  isGatewayKeyUnavailable,
+  useGatewayKeyStatus,
+} from '@/hooks/use-gateway-key-status';
 import { useChatStore } from '@/lib/store/useChatStore';
 import { usePayloadStore } from '@/lib/store/usePayloadStore';
 import { useUserProfileStore } from '@/lib/store/useUserProfileStore';
@@ -14,6 +18,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { toast } from 'sonner';
+import { GatewayKeyBanner } from '../gateway-key-banner';
 import { InputBoxSkeleton } from './input-box-skeleton';
 import SendButton from './send-button';
 
@@ -81,8 +86,17 @@ function MainInputBox({
 
   const profile = useUserProfileStore((s) => s.profile);
   const profileLoading = useUserProfileStore((s) => s.isLoading);
+  const {
+    data: gatewayKeyStatus,
+    error: gatewayKeyError,
+    isLoading: gatewayKeyLoading,
+    mutate: refreshGatewayKeyStatus,
+  } = useGatewayKeyStatus();
 
-  const isReady = (!status || status === 'ready') && !disabled;
+  const inputDisabled =
+    disabled || isGatewayKeyUnavailable(gatewayKeyStatus, gatewayKeyLoading, gatewayKeyError);
+  const isReady = (!status || status === 'ready') && !inputDisabled;
+  const canStop = status === 'submitted' || status === 'streaming';
   const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
@@ -106,7 +120,7 @@ function MainInputBox({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!isReady || isNavigating || disabled || prompt.trim().length === 0) return;
+      if (!isReady || isNavigating || inputDisabled || prompt.trim().length === 0) return;
 
       if (path === '/') {
         setIsNavigating(true);
@@ -170,7 +184,7 @@ function MainInputBox({
     [
       isReady,
       isNavigating,
-      disabled,
+      inputDisabled,
       prompt,
       path,
       setPrompt,
@@ -186,10 +200,10 @@ function MainInputBox({
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Enter' && !e.ctrlKey) {
         e.preventDefault();
-        if (!disabled) handleSubmit(e);
+        if (!inputDisabled) handleSubmit(e);
       }
     },
-    [disabled, handleSubmit]
+    [inputDisabled, handleSubmit]
   );
 
   const handleStop = useCallback(() => {
@@ -198,116 +212,140 @@ function MainInputBox({
   }, [setThinking, stopResponse]);
 
   if (profileLoading || (!profile && !profileLoading)) {
-    return <InputBoxSkeleton />;
+    return (
+      <div className="flex w-full flex-col gap-2">
+        <GatewayKeyBanner
+          hasKey={gatewayKeyStatus?.hasKey}
+          error={gatewayKeyError}
+          onRetry={() => {
+            void refreshGatewayKeyStatus();
+          }}
+        />
+        <InputBoxSkeleton />
+      </div>
+    );
   }
 
-  const placeholderText = disabled ? 'Chat is currently unavailable' : 'Ask anything...';
+  const placeholderText = gatewayKeyLoading
+    ? 'Checking API key...'
+    : gatewayKeyError
+      ? 'Unable to verify API key'
+      : gatewayKeyStatus?.hasKey === false
+        ? 'Add an API key in Settings to start chatting'
+        : 'Ask anything...';
 
   return (
-    <motion.form
-      transition={{ duration: 0.2 }}
-      layout
-      onSubmit={handleSubmit}
-      className={`w-[96vw] origin-center lg:max-w-[55vw] mx-auto shadow-md shadow-background/50
-                 h-fit flex p-2 gap-2 border-2 items-center bg-sidebar ${
-                   disabled ? 'cursor-not-allowed' : ''
-                 }`}
-    >
-      <TextareaAutosize
-        placeholder={placeholderText}
-        autoFocus={!disabled}
-        onKeyDown={handleKeyDown}
-        className="w-full h-full scrollbar-thumb-accent scrollbar-thin border-0 resize-none max-h-40
-                   placeholder:opacity-70 placeholder:text-primary bg-transparent min-h-11 px-2 pl-3
-                   place-content-center leading-tight focus:outline-none focus-visible:ring-0"
-        value={prompt}
-        onChange={(e) => !disabled && setPrompt(e.target.value)}
-        maxRows={6}
-        minRows={1}
-        disabled={disabled}
+    <div className="flex w-full flex-col gap-2">
+      <GatewayKeyBanner
+        hasKey={gatewayKeyStatus?.hasKey}
+        error={gatewayKeyError}
+        onRetry={() => {
+          void refreshGatewayKeyStatus();
+        }}
       />
-
-      {/* Agent Mode Toggle */}
-      <div className="flex h-full items-center">
-        <Toggle
-          aria-label="Toggle agent mode"
-          size="lg"
-          variant="outline"
-          pressed={agentMode}
-          onPressedChange={setAgentMode}
-          disabled={disabled}
-          className="data-[state=on]:bg-input/30 data-[state=on]:hover:bg-input/50
-                     data-[state=off]:bg-input/30 data-[state=off]:hover:bg-input/50  border-2
-                     transition-all duration-200 cursor-pointer "
-        >
-          {agentMode ? (
-            <div className="flex px-1 gap-1 items-center">
-              <Frame className="size-5" />
-              <span className="text-sm font-medium">Agent</span>
-            </div>
-          ) : (
-            <div className="flex px-1 gap-1 items-center">
-              <MessageCircleMore className="size-5" />
-              <span className="text-sm font-medium">Chat</span>
-            </div>
-          )}
-        </Toggle>
-      </div>
-      {/* Model Selector - Clean */}
-      <div className="flex h-full items-center">
-        <Select
-          value={selectedModel}
-          onValueChange={(value: ModelValue) => setSelectedModel(value)}
-          disabled={disabled}
-        >
-          <SelectTrigger
-            className={`h-full  data-[size=default]:h-10 border-2 rounded-none  cursor-pointer`}
-          >
-            <Sparkles className={`size-4  `} />
-          </SelectTrigger>
-          <SelectContent className=" border-2 bg-background/70 backdrop-blur-lg  ">
-            {MODELS.map((model) => (
-              <SelectItem
-                key={model.value}
-                value={model.value}
-                className="cursor-pointer  hover:bg-accent/30   rounded-none"
-              >
-                {model.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <motion.div
+      <motion.form
+        transition={{ duration: 0.2 }}
         layout
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="my-auto"
+        onSubmit={handleSubmit}
+        className={`w-[96vw] origin-center lg:max-w-[55vw] mx-auto shadow-md shadow-background/50
+                   h-fit flex p-2 gap-2 border-2 items-center bg-sidebar ${
+                     inputDisabled ? 'cursor-not-allowed' : ''
+                   }`}
       >
-        {isReady ? (
-          <SendButton
-            className=" hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-full cursor-pointer !border-2"
-            props={{
-              type: 'submit',
-              disabled: !isReady || prompt.length === 0 || isNavigating || disabled,
-            }}
-          >
-            <Forward className="size-6" />
-          </SendButton>
-        ) : (
-          <Button
+        <TextareaAutosize
+          placeholder={placeholderText}
+          autoFocus={!inputDisabled}
+          onKeyDown={handleKeyDown}
+          className="w-full h-full scrollbar-thumb-accent scrollbar-thin border-0 resize-none max-h-40
+                     placeholder:opacity-70 placeholder:text-primary bg-transparent min-h-11 px-2 pl-3
+                     place-content-center leading-tight focus:outline-none focus-visible:ring-0"
+          value={prompt}
+          onChange={(e) => !inputDisabled && setPrompt(e.target.value)}
+          maxRows={6}
+          minRows={1}
+          disabled={inputDisabled}
+        />
+
+        {/* Agent Mode Toggle */}
+        <div className="flex h-full items-center">
+          <Toggle
+            aria-label="Toggle agent mode"
+            size="lg"
             variant="outline"
-            className="bg-accent border-2 h-full text-accent-foreground
-                       hover:bg-destructive cursor-pointer hover:scale-105 duration-300"
-            onClick={handleStop}
-            disabled={disabled}
+            pressed={agentMode}
+            onPressedChange={setAgentMode}
+            disabled={inputDisabled}
+            className="data-[state=on]:bg-input/30 data-[state=on]:hover:bg-input/50
+                       data-[state=off]:bg-input/30 data-[state=off]:hover:bg-input/50  border-2
+                       transition-all duration-200 cursor-pointer "
           >
-            <SquareDashed className="size-5" />
-          </Button>
-        )}
-      </motion.div>
-    </motion.form>
+            {agentMode ? (
+              <div className="flex px-1 gap-1 items-center">
+                <Frame className="size-5" />
+                <span className="text-sm font-medium">Agent</span>
+              </div>
+            ) : (
+              <div className="flex px-1 gap-1 items-center">
+                <MessageCircleMore className="size-5" />
+                <span className="text-sm font-medium">Chat</span>
+              </div>
+            )}
+          </Toggle>
+        </div>
+        {/* Model Selector - Clean */}
+        <div className="flex h-full items-center">
+          <Select
+            value={selectedModel}
+            onValueChange={(value: ModelValue) => setSelectedModel(value)}
+            disabled={inputDisabled}
+          >
+            <SelectTrigger className="h-full data-[size=default]:h-10 border-2 rounded-none cursor-pointer">
+              <Sparkles className="size-4" />
+            </SelectTrigger>
+            <SelectContent className="border-2 bg-background/70 backdrop-blur-lg">
+              {MODELS.map((model) => (
+                <SelectItem
+                  key={model.value}
+                  value={model.value}
+                  className="cursor-pointer hover:bg-accent/30 rounded-none"
+                >
+                  {model.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <motion.div
+          layout
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="my-auto"
+        >
+          {canStop ? (
+            <Button
+              variant="outline"
+              className="bg-accent border-2 h-full text-accent-foreground
+                         hover:bg-destructive cursor-pointer hover:scale-105 duration-300"
+              onClick={handleStop}
+              disabled={disabled}
+            >
+              <SquareDashed className="size-5" />
+            </Button>
+          ) : (
+            <SendButton
+              className="hover:shadow-sm disabled:opacity-100 hover:shadow-foreground/5 duration-300 !h-full cursor-pointer !border-2"
+              props={{
+                type: 'submit',
+                disabled: !isReady || prompt.length === 0 || isNavigating || inputDisabled,
+              }}
+            >
+              <Forward className="size-6" />
+            </SendButton>
+          )}
+        </motion.div>
+      </motion.form>
+    </div>
   );
 }
 

@@ -50,8 +50,6 @@ export async function GetBestModel(
       messages: convertToModelMessages(currentMessages),
     });
 
-    console.log('Router response:', text);
-
     const match = text.trim().match(/[1-5]/);
     let complexityNum = match ? parseInt(match[0], 10) : 3;
 
@@ -69,8 +67,8 @@ export async function GetBestModel(
           : SIMPLE_MODELS[complexityNum as keyof typeof SIMPLE_MODELS],
       complexity: complexityNum,
     };
-  } catch (error) {
-    console.warn('Text generation failed:', error);
+  } catch {
+    console.warn('Text generation failed');
     return {
       autoModel: chatMode === 'agent' ? AGENT_MODELS[3] : SIMPLE_MODELS[3],
       complexity: 3,

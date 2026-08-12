@@ -1,6 +1,16 @@
-import { NextResponse } from 'next/server';
 import { getServerUserId } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import {
+  deleteUserGatewayKey,
+  getUserGatewayKeyMetadata,
+  replaceUserGatewayKey,
+} from '@/lib/services/user-gateway';
+import { NextResponse } from 'next/server';
+
+export const runtime = 'nodejs';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
 
 export async function GET() {
   try {
@@ -9,55 +19,61 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const settings = await prisma.userSettings.findUnique({
-      where: { userId },
-      select: { gatewayKey: true },
-    });
-
-    if (!settings?.gatewayKey) {
-      return NextResponse.json({ hasKey: false, masked: null });
-    }
-
-    const masked = `${settings.gatewayKey.slice(0, 8)}...${settings.gatewayKey.slice(-4)}`;
-    return NextResponse.json({ hasKey: true, masked });
-  } catch (error) {
-    console.error('Failed to get gateway key:', error);
+    return NextResponse.json(await getUserGatewayKeyMetadata(userId));
+  } catch {
+    console.error('Failed to get gateway key metadata');
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function PUT(request: Request) {
   try {
     const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { gatewayKey } = body;
+    const body: unknown = await request.json();
+    const gatewayKey = isRecord(body) ? body.gatewayKey : undefined;
 
-    if (!gatewayKey || typeof gatewayKey !== 'string') {
+    if (typeof gatewayKey !== 'string' || !gatewayKey.trim()) {
       return NextResponse.json({ error: 'Gateway key required' }, { status: 400 });
     }
 
-    const trimmedKey = gatewayKey.trim();
-    if (!trimmedKey.startsWith('vck_')) {
+    if (!gatewayKey.trim().startsWith('vck_')) {
       return NextResponse.json(
         { error: 'Invalid key format. Must start with vck_' },
         { status: 400 }
       );
     }
 
-    await prisma.userSettings.upsert({
-      where: { userId },
-      update: { gatewayKey: trimmedKey },
-      create: { userId, gatewayKey: trimmedKey },
+    await replaceUserGatewayKey(userId, gatewayKey);
+    return NextResponse.json({
+      hasKey: true,
+      masked: (await getUserGatewayKeyMetadata(userId)).masked,
     });
+  } catch {
+    console.error('Failed to replace gateway key');
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+  }
+}
 
-    const masked = `${trimmedKey.slice(0, 8)}...${trimmedKey.slice(-4)}`;
-    return NextResponse.json({ success: true, masked });
-  } catch (error) {
-    console.error('Failed to save gateway key:', error);
+// Keep the existing save method working for older clients while PUT remains the explicit replace operation.
+export async function POST(request: Request) {
+  return PUT(request);
+}
+
+export async function DELETE() {
+  try {
+    const userId = await getServerUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await deleteUserGatewayKey(userId);
+    return NextResponse.json({ hasKey: false, masked: null });
+  } catch {
+    console.error('Failed to delete gateway key');
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
